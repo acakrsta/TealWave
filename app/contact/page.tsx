@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { TransitionLink } from "../components/TransitionLink";
 
 const ROBOTO_MONO = "var(--font-roboto-mono), monospace";
@@ -61,29 +61,22 @@ function CalendlyModal({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/75" onClick={onClose} />
-      <div className="relative w-full max-w-[1100px] rounded-2xl overflow-hidden shadow-2xl bg-[#0f0f0f]">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-        </button>
-        <iframe
-          src="https://calendly.com/tealwavesolutions/30min?hide_gdpr_banner=1&primary_color=069494"
-          style={{
-            display: "block",
-            border: "none",
-            marginTop: "-48px",
-            marginLeft: "-48px",
-            marginBottom: "-48px",
-            width: "calc(100% + 96px)",
-            height: "796px",
-          }}
-        />
+    <div className="fixed inset-0 z-[200]">
+      <div className="absolute inset-0 bg-black/75" />
+      <div className="absolute inset-0 overflow-y-auto" onClick={onClose}>
+        <div className="flex min-h-full items-start justify-center p-4 py-8">
+          <div className="relative w-full max-w-[1100px] rounded-2xl overflow-hidden shadow-2xl bg-[#0f0f0f]" onClick={e => e.stopPropagation()}>
+            <button onClick={onClose} className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+            </button>
+            <iframe
+              src="https://calendly.com/tealwavesolutions/30min?hide_gdpr_banner=1&primary_color=069494"
+              style={{ display: "block", border: "none", marginLeft: "-48px", marginBottom: "-48px", width: "calc(100% + 96px)", height: "796px" }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -92,6 +85,7 @@ function CalendlyModal({ onClose }: { onClose: () => void }) {
 export default function ContactPage() {
   const [showCalendly, setShowCalendly] = useState(false);
   const [navHidden, setNavHidden] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const lastScrollY = useRef(0);
   const footerRef = useRef<HTMLElement>(null);
   const { scrollYProgress: footerProgress } = useScroll({
@@ -147,14 +141,14 @@ export default function ContactPage() {
 
       {/* NAV */}
       <motion.nav
-        animate={{ y: navHidden ? "-100%" : "0%" }}
+        animate={{ y: navHidden && !menuOpen ? "-100%" : "0%" }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
         className="fixed top-0 left-0 right-0 z-50 h-[72px] bg-[#f9f9f9] border-b border-[#f9f9f9]"
       >
-        <div className="max-w-[1240px] mx-auto px-8 h-full flex items-center justify-between relative">
+        <div className="max-w-[1240px] mx-auto px-4 md:px-8 h-full flex items-center justify-between relative">
           <TransitionLink href="/" className="flex-shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="TealWave" className="h-[30px] w-auto" />
+            <img src="/logo.svg" alt="TealWave" className="h-[22px] md:h-[30px] w-auto" />
           </TransitionLink>
 
           <ul className="hidden md:flex items-center gap-12 list-none absolute left-1/2 -translate-x-1/2">
@@ -171,7 +165,7 @@ export default function ContactPage() {
           </ul>
 
           <div className="flex items-center gap-4">
-            <button className="flex items-center gap-1 text-[14px] font-semibold tracking-wide text-neutral-600 hover:text-neutral-900 transition-colors">
+            <button className="hidden md:flex items-center gap-1 text-[14px] font-semibold tracking-wide text-neutral-600 hover:text-neutral-900 transition-colors">
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
                 <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.1"/>
                 <ellipse cx="6.5" cy="6.5" rx="2.2" ry="5.5" stroke="currentColor" strokeWidth="1.1"/>
@@ -182,9 +176,9 @@ export default function ContactPage() {
                 <path d="M1 1L4 4L7 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
             </button>
-            <TransitionLink href="/contact" className="group flex items-center rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
-              <span className="flex-1 px-4 py-2 text-[18px] font-[500] text-white group-hover:text-neutral-900 transition-colors duration-200" style={{ fontFamily: SATOSHI }}>Get in touch</span>
-              <span className="m-2 w-7 h-7 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
+            <TransitionLink href="/contact" className="flex group items-center rounded-sm overflow-hidden border border-neutral-300 md:border-0 md:bg-neutral-900 hover:bg-neutral-50 md:hover:bg-[#069494] transition-colors duration-200">
+              <span className="px-3 py-[7px] md:px-4 md:py-2 text-[14px] md:text-[18px] font-[500] text-neutral-900 md:text-white md:group-hover:text-neutral-900 transition-colors duration-200 whitespace-nowrap" style={{ fontFamily: SATOSHI }}>Get in touch</span>
+              <span className="hidden md:flex m-2 w-7 h-7 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
                   <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
@@ -193,14 +187,100 @@ export default function ContactPage() {
                 </svg>
               </span>
             </TransitionLink>
+            {/* Hamburger – with border */}
+            <button
+              className="md:hidden flex flex-col items-center justify-center w-10 h-10 border border-neutral-300 rounded-sm gap-[5px]"
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label="Toggle menu"
+            >
+              <motion.span className="w-5 h-[1.5px] bg-neutral-800 block"
+                animate={menuOpen ? { rotate: 45, y: 6.5 } : { rotate: 0, y: 0 }}
+                transition={{ duration: 0.2 }}
+              />
+              <motion.span className="w-5 h-[1.5px] bg-neutral-800 block"
+                animate={menuOpen ? { opacity: 0 } : { opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              />
+              <motion.span className="w-5 h-[1.5px] bg-neutral-800 block"
+                animate={menuOpen ? { rotate: -45, y: -6.5 } : { rotate: 0, y: 0 }}
+                transition={{ duration: 0.2 }}
+              />
+            </button>
           </div>
         </div>
       </motion.nav>
 
+      {/* Mobile menu overlay */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            className="fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-[#f9f9f9] flex flex-col px-6 md:hidden overflow-y-auto"
+          >
+            <ul className="flex flex-col list-none">
+              {[
+                { label: "Services", href: "/services" },
+                { label: "Use Cases", href: "/services#solutions" },
+                { label: "How We Work", href: "/#how-we-work" },
+                { label: "About", href: "/about" },
+              ].map((l) => (
+                <li key={l.label} className="border-b border-neutral-200">
+                  <a
+                    href={l.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-5 text-[28px] font-[700] tracking-[-0.02em] text-neutral-900"
+                    style={{ fontFamily: SATOSHI }}
+                  >
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-auto pt-8 pb-8">
+              <ul className="flex flex-col list-none">
+                <li className="border-b border-neutral-200">
+                  <button
+                    onClick={() => { setMenuOpen(false); setShowCalendly(true); }}
+                    className="block w-full text-left py-4 text-[13px] font-normal tracking-[0.12em] uppercase text-neutral-500"
+                    style={{ fontFamily: ROBOTO_MONO }}
+                  >
+                    Book a Call
+                  </button>
+                </li>
+                <li className="border-b border-neutral-200">
+                  <a
+                    href="/contact"
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-4 text-[13px] font-normal tracking-[0.12em] uppercase text-neutral-500"
+                    style={{ fontFamily: ROBOTO_MONO }}
+                  >
+                    Contact
+                  </a>
+                </li>
+                <li className="border-b border-neutral-200">
+                  <a
+                    href="#"
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-4 text-[13px] font-normal tracking-[0.12em] uppercase text-neutral-500"
+                    style={{ fontFamily: ROBOTO_MONO }}
+                  >
+                    Legal
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* CONTENT */}
       <main className="min-h-screen bg-[#f9f9f9] pt-[72px]" style={{ fontFamily: SATOSHI }}>
-        <div className="max-w-[1240px] mx-auto px-8 py-20">
-          <div className="grid grid-cols-2 gap-20">
+        <div className="max-w-[1240px] mx-auto px-4 md:px-8 py-10 md:py-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20">
 
             {/* LEFT */}
             <div>
@@ -217,7 +297,7 @@ export default function ContactPage() {
               </div>
 
               <h1
-                className="text-[64px] font-[700] leading-[1.0] tracking-[-0.04em] text-neutral-900 mb-6"
+                className="text-[42px] md:text-[64px] font-[700] leading-[1.0] tracking-[-0.04em] text-neutral-900 mb-6"
                 style={{ fontFamily: SATOSHI }}
               >
                 Let's talk.
@@ -229,19 +309,17 @@ export default function ContactPage() {
 
               <div className="flex flex-col gap-4">
                 {/* Book a call */}
-                <div className="bg-white rounded-tl-2xl rounded-bl-2xl rounded-br-2xl p-7 flex items-center justify-between gap-6" style={{ clipPath: "polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%)" }}>
-                  <div>
-                    <h3
-                      className="text-[26px] font-[700] leading-[1.1] tracking-[-0.03em] text-neutral-900 mb-1"
-                      style={{ fontFamily: SATOSHI }}
-                    >
-                      Book a discovery call
-                    </h3>
-                    <p className="text-neutral-900 text-[16px] font-[500]" style={{ fontFamily: SATOSHI }}>Free 30-minute call to explore your operational challenges.</p>
-                  </div>
+                <div className="bg-white rounded-tl-2xl rounded-bl-2xl rounded-br-2xl p-7" style={{ clipPath: "polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%)" }}>
+                  <h3
+                    className="text-[26px] font-[700] leading-[1.1] tracking-[-0.03em] text-neutral-900 mb-2"
+                    style={{ fontFamily: SATOSHI }}
+                  >
+                    Book a discovery call
+                  </h3>
+                  <p className="text-neutral-900 text-[16px] font-[500] mb-6" style={{ fontFamily: SATOSHI }}>Free 30-minute call to explore your operational challenges.</p>
                   <button
                     onClick={() => setShowCalendly(true)}
-                    className="group flex items-center flex-shrink-0 rounded-sm overflow-hidden border border-neutral-200 hover:border-neutral-400 transition-colors duration-200"
+                    className="group flex items-center rounded-sm overflow-hidden border border-neutral-200 hover:border-neutral-400 transition-colors duration-200"
                   >
                     <span className="px-5 py-3 text-[18px] font-[500] text-neutral-900 whitespace-nowrap" style={{ fontFamily: SATOSHI }}>Book a call</span>
                     <span className="m-2 w-8 h-8 flex-shrink-0 rounded-sm bg-[#f3f3f3] text-neutral-600 relative overflow-hidden">
@@ -253,19 +331,17 @@ export default function ContactPage() {
                 </div>
 
                 {/* Email */}
-                <div className="bg-white rounded-tl-2xl rounded-bl-2xl rounded-br-2xl p-7 flex items-center justify-between gap-6" style={{ clipPath: "polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%)" }}>
-                  <div>
-                    <h3
-                      className="text-[26px] font-[700] leading-[1.1] tracking-[-0.03em] text-neutral-900 mb-1"
-                      style={{ fontFamily: SATOSHI }}
-                    >
-                      Email us directly
-                    </h3>
-                    <p className="text-neutral-900 text-[16px] font-[500]" style={{ fontFamily: SATOSHI }}>Prefer email? Reach out anytime.</p>
-                  </div>
+                <div className="bg-white rounded-tl-2xl rounded-bl-2xl rounded-br-2xl p-7" style={{ clipPath: "polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%)" }}>
+                  <h3
+                    className="text-[26px] font-[700] leading-[1.1] tracking-[-0.03em] text-neutral-900 mb-2"
+                    style={{ fontFamily: SATOSHI }}
+                  >
+                    Email us directly
+                  </h3>
+                  <p className="text-neutral-900 text-[16px] font-[500] mb-6" style={{ fontFamily: SATOSHI }}>Prefer email? Reach out anytime.</p>
                   <a
                     href="mailto:ivanafisic26@gmail.com"
-                    className="group flex items-center flex-shrink-0 rounded-sm overflow-hidden border border-neutral-200 hover:border-neutral-400 transition-colors duration-200"
+                    className="group flex items-center w-fit rounded-sm overflow-hidden border border-neutral-200 hover:border-neutral-400 transition-colors duration-200"
                   >
                     <span className="px-5 py-3 text-[18px] font-[500] text-neutral-900 whitespace-nowrap" style={{ fontFamily: SATOSHI }}>Send email</span>
                     <span className="m-2 w-8 h-8 flex-shrink-0 rounded-sm bg-[#f3f3f3] text-neutral-600 relative overflow-hidden">
@@ -279,7 +355,7 @@ export default function ContactPage() {
             </div>
 
             {/* RIGHT – Form */}
-            <div className="pt-[88px]">
+            <div className="pt-0 md:pt-[88px]">
               <h2
                 className="text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] text-neutral-900 mb-10"
                 style={{ fontFamily: SATOSHI }}
@@ -288,7 +364,7 @@ export default function ContactPage() {
               </h2>
 
               <form onSubmit={handleSubmit} className="bg-white rounded-tl-2xl rounded-bl-2xl rounded-br-2xl p-10 flex flex-col gap-8" style={{ clipPath: "polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%)" }}>
-                <div className="grid grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   <div>
                     <label className={labelClass} style={{ fontFamily: ROBOTO_MONO }}>First Name</label>
                     <input
@@ -421,10 +497,10 @@ export default function ContactPage() {
         <div className="relative z-10 max-w-[1240px] mx-auto">
 
           {/* CTA row */}
-          <div className="py-20 flex items-center justify-between gap-12">
+          <div className="pt-24 pb-12 md:py-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 md:gap-12">
             <div>
               <h2
-                className="text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] text-white mb-4"
+                className="text-[28px] md:text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] text-white mb-4"
                 style={{ fontFamily: SATOSHI }}
               >
                 Clarity starts with a conversation.
@@ -435,9 +511,9 @@ export default function ContactPage() {
             </div>
             <button
               onClick={() => setShowCalendly(true)}
-              className="group flex items-center flex-shrink-0 rounded-sm overflow-hidden bg-white hover:bg-[#069494] transition-colors duration-200"
+              className="group flex items-center w-auto flex-shrink-0 rounded-sm overflow-hidden bg-white hover:bg-[#069494] transition-colors duration-200"
             >
-              <span className="flex-1 px-6 py-4 text-[18px] font-[500] text-neutral-900 group-hover:text-white transition-colors duration-200 whitespace-nowrap" style={{ fontFamily: SATOSHI }}>Start the Conversation</span>
+              <span className="px-6 py-4 text-[18px] font-[500] text-neutral-900 group-hover:text-white transition-colors duration-200 whitespace-nowrap" style={{ fontFamily: SATOSHI }}>Start the Conversation</span>
               <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm bg-neutral-100 group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
                 <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
                   <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -453,7 +529,7 @@ export default function ContactPage() {
           <div className="border-t border-neutral-800" />
 
           {/* Links grid */}
-          <div className="py-16 grid grid-cols-4 gap-12">
+          <div className="py-10 md:py-16 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
 
             <div>
               <p className="text-[14px] font-normal tracking-[0.12em] uppercase text-neutral-500 mb-5" style={{ fontFamily: ROBOTO_MONO }}>About TealWave</p>

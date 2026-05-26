@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform, useInView } from "framer-motion";
 import { TransitionLink } from "./components/TransitionLink";
 
 const SCRAMBLE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -205,6 +205,13 @@ const solutionIcons = [
 
 function ChallengesSection() {
   const ref = useRef<HTMLElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end end"],
@@ -223,12 +230,18 @@ function ChallengesSection() {
   const y4  = useTransform(scrollYProgress, [0, 0.74, 0.90, 1], [60, 60, 0, 0]);
   const op4 = useTransform(scrollYProgress, [0, 0.74, 0.90, 1], [0,  0,  1, 1]);
 
+  const mobileTops  = ["8%", "20%", "67%", "77%"];
+  const mobileLefts = ["36%", "62%", "36%", "62%"];
   const pills = [
     { text: "Delivery becoming reactive and unpredictable",  top: "22%", left: "24%", y: y1, opacity: op1 },
     { text: "Founders stuck as the operational bottleneck",  top: "25%", left: "76%", y: y2, opacity: op2 },
     { text: "Teams overwhelmed by constant context switching", top: "75%", left: "31%", y: y3, opacity: op3 },
     { text: "Priorities changing faster than work gets done", top: "78%", left: "70%", y: y4, opacity: op4 },
-  ];
+  ].map((p, i) => ({
+    ...p,
+    top:  isMobile ? mobileTops[i]  : p.top,
+    left: isMobile ? mobileLefts[i] : p.left,
+  }));
 
   return (
     <section ref={ref} className="relative bg-white" style={{ height: "4100px" }}>
@@ -236,7 +249,7 @@ function ChallengesSection() {
         {/* Large centered text */}
         <div className="absolute inset-0 flex items-center justify-center px-8 pointer-events-none">
           <p
-            className="w-full max-w-[1240px] px-8 text-center text-[clamp(20px,2.1vw,28px)] font-[700] leading-[1.2] tracking-[-0.01em] text-[#0f0f0f] whitespace-nowrap"
+            className="w-full max-w-[680px] md:max-w-[1240px] px-6 md:px-8 text-center text-[24px] md:text-[clamp(20px,2.5vw,28px)] font-[700] leading-[1.3] tracking-[-0.01em] text-[#0f0f0f] whitespace-normal md:whitespace-nowrap"
             style={{ fontFamily: "'Satoshi', sans-serif" }}
           >
             We recognize the operational friction scaling teams face. That is why sustainable delivery starts here.
@@ -252,7 +265,7 @@ function ChallengesSection() {
           >
             <motion.div style={{ y: pill.y, opacity: pill.opacity }}>
               <div
-                className="flex items-center gap-3 px-5 py-3.5"
+                className="flex items-center gap-2 md:gap-3 px-3 md:px-5 py-2 md:py-3.5 w-[185px] md:w-auto md:max-w-none"
                 style={{ backgroundColor: "#f3f3f3" }}
               >
                 <svg width="18" height="17" viewBox="0 0 18 17" fill="none" className="flex-shrink-0">
@@ -261,7 +274,7 @@ function ChallengesSection() {
                   <circle cx="9" cy="13.5" r="0.8" fill="white" />
                 </svg>
                 <span
-                  className="text-[18px] font-[500] text-[#131313] whitespace-nowrap"
+                  className="text-[13px] md:text-[18px] font-[500] text-[#131313]"
                   style={{ fontFamily: "'Satoshi', sans-serif" }}
                 >
                   {pill.text}
@@ -368,57 +381,94 @@ function ProcessSection() {
   ];
 
   return (
-    <section ref={ref} id="how-we-work" className="relative bg-white" style={{ height: "400vh" }}>
-      <div className="sticky top-0 overflow-hidden" style={{ height: "100vh" }}>
+    <>
+      <div id="how-we-work" />
 
-        {/* Section label */}
-        <div className="absolute top-8 left-0 right-0">
-          <div className="max-w-[1240px] mx-auto px-6 md:px-12">
-            <div className="relative w-full h-[5px] mb-3">
-              <div className="absolute left-0 bottom-0 w-full h-px bg-[#e5e5e5]" />
-              <svg className="absolute left-0 top-0 flex-shrink-0" width="183" height="5" viewBox="0 0 183 5" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 0 0 L 178 0 L 183 5 L 0 5 Z" fill="#e5e5e5"/>
-              </svg>
-            </div>
-            <p className="text-[14px] font-normal tracking-[0.1em] uppercase text-neutral-900" style={{ fontFamily: "var(--font-roboto-mono), monospace" }}>/HOW WE WORK</p>
+      {/* Mobile: static vertical list */}
+      <section className="block md:hidden bg-white">
+        <div className="px-6 pt-10 pb-4">
+          <div className="relative w-full h-[5px] mb-3">
+            <div className="absolute left-0 bottom-0 w-full h-px bg-[#e5e5e5]" />
+            <svg className="absolute left-0 top-0 flex-shrink-0" width="183" height="5" viewBox="0 0 183 5" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 0 0 L 178 0 L 183 5 L 0 5 Z" fill="#e5e5e5"/>
+            </svg>
           </div>
+          <p className="text-[14px] font-normal tracking-[0.1em] uppercase text-neutral-900" style={{ fontFamily: "var(--font-roboto-mono), monospace" }}>/HOW WE WORK</p>
         </div>
 
         {steps.map((step) => (
-          <motion.div key={step.num} style={{ opacity: step.opacity }} className="absolute inset-0">
-            <div className="max-w-[1240px] mx-auto px-6 md:px-12 h-full relative">
-
-              {/* Step number */}
-              <div className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2">
-                <span
-                  className="text-[52px] font-[700] leading-none tracking-[-0.04em] text-neutral-200"
-                  style={{ fontFamily: "'Satoshi', sans-serif" }}
-                >
-                  {step.num}
-                </span>
-              </div>
-
-              {/* Illustration */}
-              <div className="absolute left-[38%] top-[46%] -translate-x-1/2 -translate-y-1/2">
-                {step.illustration}
-              </div>
-
-              {/* Text */}
-              <div className="absolute right-6 md:right-12 bottom-[18%] max-w-[380px]">
-                <h3
-                  className="text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] mb-4 text-neutral-900"
-                  style={{ fontFamily: "'Satoshi', sans-serif" }}
-                >
-                  {step.title}
-                </h3>
-                <p className="text-neutral-900 text-[16px] font-[500] leading-relaxed">{step.text}</p>
-              </div>
-
-            </div>
-          </motion.div>
+          <div key={step.num} className="px-6 pt-8 pb-12">
+            <span
+              className="text-[32px] font-[700] leading-none tracking-[-0.04em] text-neutral-200 block mb-8"
+              style={{ fontFamily: "'Satoshi', sans-serif" }}
+            >
+              {step.num}
+            </span>
+            <div className="flex justify-center mb-8">{step.illustration}</div>
+            <h3
+              className="text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] mb-4 text-neutral-900"
+              style={{ fontFamily: "'Satoshi', sans-serif" }}
+            >
+              {step.title}
+            </h3>
+            <p className="text-neutral-900 text-[16px] font-[500] leading-relaxed">{step.text}</p>
+          </div>
         ))}
-      </div>
-    </section>
+      </section>
+
+      {/* Desktop: sticky scroll animation */}
+      <section ref={ref} className="hidden md:block relative bg-white" style={{ height: "400vh" }}>
+        <div className="sticky top-0 overflow-hidden" style={{ height: "100vh" }}>
+
+          {/* Section label */}
+          <div className="absolute top-8 left-0 right-0">
+            <div className="max-w-[1240px] mx-auto px-6 md:px-12">
+              <div className="relative w-full h-[5px] mb-3">
+                <div className="absolute left-0 bottom-0 w-full h-px bg-[#e5e5e5]" />
+                <svg className="absolute left-0 top-0 flex-shrink-0" width="183" height="5" viewBox="0 0 183 5" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 0 0 L 178 0 L 183 5 L 0 5 Z" fill="#e5e5e5"/>
+                </svg>
+              </div>
+              <p className="text-[14px] font-normal tracking-[0.1em] uppercase text-neutral-900" style={{ fontFamily: "var(--font-roboto-mono), monospace" }}>/HOW WE WORK</p>
+            </div>
+          </div>
+
+          {steps.map((step) => (
+            <motion.div key={step.num} style={{ opacity: step.opacity }} className="absolute inset-0">
+              <div className="max-w-[1240px] mx-auto px-6 md:px-12 h-full relative">
+
+                {/* Step number */}
+                <div className="absolute left-12 top-1/2 -translate-y-1/2">
+                  <span
+                    className="text-[52px] font-[700] leading-none tracking-[-0.04em] text-neutral-200"
+                    style={{ fontFamily: "'Satoshi', sans-serif" }}
+                  >
+                    {step.num}
+                  </span>
+                </div>
+
+                {/* Illustration */}
+                <div className="absolute left-[38%] top-[46%] -translate-x-1/2 -translate-y-1/2">
+                  {step.illustration}
+                </div>
+
+                {/* Text */}
+                <div className="absolute right-12 bottom-[18%] max-w-[380px]">
+                  <h3
+                    className="text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] mb-4 text-neutral-900"
+                    style={{ fontFamily: "'Satoshi', sans-serif" }}
+                  >
+                    {step.title}
+                  </h3>
+                  <p className="text-neutral-900 text-[16px] font-[500] leading-relaxed">{step.text}</p>
+                </div>
+
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }
 
@@ -435,29 +485,40 @@ function CalendlyModal({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/75" onClick={onClose} />
-      <div className="relative w-full max-w-[1100px] rounded-2xl overflow-hidden shadow-2xl bg-[#0f0f0f]">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-          </svg>
-        </button>
-        <iframe
-          src="https://calendly.com/tealwavesolutions/30min?hide_gdpr_banner=1&primary_color=069494"
-          style={{
-            display: "block",
-            border: "none",
-            marginTop: "-48px",
-            marginLeft: "-48px",
-            marginBottom: "-48px",
-            width: "calc(100% + 96px)",
-            height: "796px",
-          }}
-        />
+    <div className="fixed inset-0 z-[200]">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/75" />
+      {/* Scrollable layer – click outside card closes modal */}
+      <div
+        className="absolute inset-0 overflow-y-auto"
+        onClick={onClose}
+      >
+        <div className="flex min-h-full items-start justify-center p-4 py-8">
+          <div
+            className="relative w-full max-w-[1100px] rounded-2xl overflow-hidden shadow-2xl bg-[#0f0f0f]"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={onClose}
+              className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+            </button>
+            <iframe
+              src="https://calendly.com/tealwavesolutions/30min?hide_gdpr_banner=1&primary_color=069494"
+              style={{
+                display: "block",
+                border: "none",
+                marginLeft: "-48px",
+                marginBottom: "-48px",
+                width: "calc(100% + 96px)",
+                height: "796px",
+              }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -467,6 +528,7 @@ export default function Home() {
   const [showCalendly, setShowCalendly] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const [navHidden, setNavHidden] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   const footerRef = useRef<HTMLElement>(null);
   const lastScrollY = useRef(0);
@@ -495,15 +557,15 @@ export default function Home() {
 
       {/* NAV */}
       <motion.nav
-        animate={{ y: navHidden ? "-100%" : "0%" }}
+        animate={{ y: navHidden && !menuOpen ? "-100%" : "0%" }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
         className={`fixed top-0 left-0 right-0 z-50 h-[72px] ${pastHero ? "bg-white border-b border-neutral-200" : "bg-[#f9f9f9]"}`}
       >
-        <div className="max-w-[1240px] mx-auto px-8 h-full flex items-center justify-between relative">
+        <div className="max-w-[1240px] mx-auto px-4 md:px-8 h-full flex items-center justify-between relative">
         {/* Logo */}
         <a href="/" className="flex-shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Subduxion" className="h-[30px] w-auto" />
+          <img src="/logo.svg" alt="Subduxion" className="h-[22px] md:h-[30px] w-auto" />
         </a>
 
         {/* Links */}
@@ -522,8 +584,8 @@ export default function Home() {
 
         {/* Right controls */}
         <div className="flex items-center gap-4">
-          {/* Language */}
-          <button className="flex items-center gap-1 text-[14px] font-semibold tracking-wide text-neutral-600 hover:text-neutral-900 transition-colors">
+          {/* Language – hidden on mobile */}
+          <button className="hidden md:flex items-center gap-1 text-[14px] font-semibold tracking-wide text-neutral-600 hover:text-neutral-900 transition-colors">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
               <circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.1"/>
               <ellipse cx="6.5" cy="6.5" rx="2.2" ry="5.5" stroke="currentColor" strokeWidth="1.1"/>
@@ -534,10 +596,10 @@ export default function Home() {
               <path d="M1 1L4 4L7 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
             </svg>
           </button>
-          {/* CTA */}
-          <TransitionLink href="/contact" className="group flex items-center rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
-            <span className="flex-1 px-4 py-2 text-[18px] font-[500] text-white group-hover:text-neutral-900 transition-colors duration-200" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Get in touch</span>
-            <span className="m-2 w-7 h-7 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
+          {/* CTA – outline on mobile, filled on desktop */}
+          <TransitionLink href="/contact" className="flex group items-center rounded-sm overflow-hidden border border-neutral-300 md:border-0 md:bg-neutral-900 hover:bg-neutral-50 md:hover:bg-[#069494] transition-colors duration-200">
+            <span className="px-3 py-[7px] md:px-4 md:py-2 text-[14px] md:text-[18px] font-[500] text-neutral-900 md:text-white md:group-hover:text-neutral-900 transition-colors duration-200 whitespace-nowrap" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Get in touch</span>
+            <span className="hidden md:flex m-2 w-7 h-7 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
                 <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -546,29 +608,115 @@ export default function Home() {
               </svg>
             </span>
           </TransitionLink>
+          {/* Hamburger – visible on mobile only, with border */}
+          <button
+            className="md:hidden flex flex-col items-center justify-center w-10 h-10 border border-neutral-300 rounded-sm gap-[5px]"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Toggle menu"
+          >
+            <motion.span className="w-5 h-[1.5px] bg-neutral-800 block"
+              animate={menuOpen ? { rotate: 45, y: 6.5 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+            <motion.span className="w-5 h-[1.5px] bg-neutral-800 block"
+              animate={menuOpen ? { opacity: 0 } : { opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            />
+            <motion.span className="w-5 h-[1.5px] bg-neutral-800 block"
+              animate={menuOpen ? { rotate: -45, y: -6.5 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+          </button>
         </div>
         </div>
       </motion.nav>
+
+      {/* Mobile menu overlay */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            className="fixed top-[72px] left-0 right-0 bottom-0 z-40 bg-[#f9f9f9] flex flex-col px-6 md:hidden overflow-y-auto"
+          >
+            <ul className="flex flex-col list-none">
+              {[
+                { label: "Services", href: "/services" },
+                { label: "Use Cases", href: "/services#solutions" },
+                { label: "How We Work", href: "#how-we-work" },
+                { label: "About", href: "/about" },
+              ].map((l) => (
+                <li key={l.label} className="border-b border-neutral-200">
+                  <a
+                    href={l.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-5 text-[28px] font-[700] tracking-[-0.02em] text-neutral-900"
+                    style={{ fontFamily: "'Satoshi', sans-serif" }}
+                  >
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-auto pt-8 pb-8">
+              <ul className="flex flex-col list-none">
+                <li className="border-b border-neutral-200">
+                  <button
+                    onClick={() => { setMenuOpen(false); setShowCalendly(true); }}
+                    className="block w-full text-left py-4 text-[13px] font-normal tracking-[0.12em] uppercase text-neutral-500"
+                    style={{ fontFamily: "var(--font-roboto-mono), monospace" }}
+                  >
+                    Book a Call
+                  </button>
+                </li>
+                <li className="border-b border-neutral-200">
+                  <a
+                    href="/contact"
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-4 text-[13px] font-normal tracking-[0.12em] uppercase text-neutral-500"
+                    style={{ fontFamily: "var(--font-roboto-mono), monospace" }}
+                  >
+                    Contact
+                  </a>
+                </li>
+                <li className="border-b border-neutral-200">
+                  <a
+                    href="#"
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-4 text-[13px] font-normal tracking-[0.12em] uppercase text-neutral-500"
+                    style={{ fontFamily: "var(--font-roboto-mono), monospace" }}
+                  >
+                    Legal
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* HERO */}
       <section ref={heroRef} className="bg-[#f9f9f9] pt-12">
         <div className="max-w-[1240px] mx-auto w-full px-8 pt-12 pb-16">
 
           {/* Row 1: Heading + small image */}
-          <div className="flex items-start gap-10 mb-24">
-            <h1 className="flex-[3] text-[64px] font-[700] leading-[1.02] tracking-[-0.03em] text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>
+          <div className="flex flex-col md:flex-row items-start gap-6 md:gap-10 mb-12 md:mb-24">
+            <h1 className="w-full md:flex-[3] text-[36px] md:text-[50px] lg:text-[64px] font-[700] leading-[1.02] tracking-[-0.03em] text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>
               TealWave helps scaling teams build operational clarity without the chaos.
             </h1>
-            <div className="flex-shrink-0 w-[260px] xl:w-[300px] self-start rounded-sm overflow-hidden aspect-[4/3]">
+            <div className="hidden md:block flex-shrink-0 w-[260px] xl:w-[300px] self-start rounded-sm overflow-hidden aspect-[4/3]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/hero1.jpg" alt="Team at AI Innovation Center" className="w-full h-full object-cover" />
             </div>
           </div>
 
           {/* Row 2: Large image + content */}
-          <div className="flex gap-10 items-center">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-center">
             {/* Large image */}
-            <div className="w-[46%] flex-shrink-0 rounded-sm overflow-hidden aspect-[4/3]">
+            <div className="w-full md:w-[46%] flex-shrink-0 rounded-sm overflow-hidden aspect-[4/3]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/hero2.jpg" alt="Developer working at multiple screens" className="w-full h-full object-cover" />
             </div>
@@ -580,8 +728,8 @@ export default function Home() {
               </p>
 
               {/* Buttons */}
-              <div className="flex gap-4">
-                <TransitionLink href="/contact" className="group flex items-center flex-1 rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <TransitionLink href="/contact" className="group flex items-center sm:flex-1 rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
                   <span className="flex-1 px-6 py-4 text-[18px] font-[500] text-white group-hover:text-neutral-900 transition-colors duration-200" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Get in Touch</span>
                   <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
                     <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
@@ -592,7 +740,7 @@ export default function Home() {
                     </svg>
                   </span>
                 </TransitionLink>
-                <a href="#services" className="group flex items-center flex-1 border border-neutral-300 text-neutral-800 hover:bg-neutral-50 transition-colors rounded-sm overflow-hidden">
+                <a href="#services" className="group flex items-center sm:flex-1 border border-neutral-300 text-neutral-800 hover:bg-neutral-50 transition-colors rounded-sm overflow-hidden">
                   <span className="flex-1 px-6 py-4 text-[18px] font-[500]" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>What We Do</span>
                   <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm border border-neutral-200 text-neutral-600 relative overflow-hidden">
                     <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
@@ -628,7 +776,7 @@ export default function Home() {
           </div>
 
           {/* Title + description row */}
-          <div className="flex flex-row items-center justify-between gap-6 pb-12 mb-12">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6 pb-8 md:pb-12 mb-8 md:mb-12">
             <SplitText className="flex-[0_0_auto] text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>Services</SplitText>
             <SplitText className="flex-[1_0_0px] max-w-[500px] text-neutral-900 text-[16px] font-[500] leading-relaxed" stagger={0.03}>
               {"We design operational systems that reduce friction, improve delivery clarity, and help teams scale sustainably — without burning people out."}
@@ -636,7 +784,7 @@ export default function Home() {
           </div>
 
           {/* Row 1: 2 large cards */}
-          <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
             {capabilities.slice(0, 2).map((c, i) => (
               <div key={c.title} className="bg-[#f9f9f9] rounded-2xl p-8 flex flex-col min-h-[380px]">
                 <div className="flex-1 flex items-center justify-center py-4">
@@ -649,7 +797,7 @@ export default function Home() {
           </div>
 
           {/* Row 2: 2 smaller cards */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {capabilities.slice(2).map((c, i) => (
               <div key={c.title} className="bg-[#f9f9f9] rounded-2xl p-8 flex flex-col min-h-[300px]">
                 <div className="flex-1 flex items-center justify-center py-4">
@@ -680,7 +828,7 @@ export default function Home() {
           </div>
 
           {/* Title + description */}
-          <div className="flex flex-row items-center justify-between gap-6 mb-16">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6 mb-10 md:mb-16">
             <SplitText className="flex-[0_0_auto] text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>Use cases</SplitText>
             <SplitText className="flex-[1_0_0px] max-w-[500px] text-neutral-900 text-[16px] font-[500] leading-relaxed" stagger={0.03}>
               {"We work with scaling teams navigating the operational friction that comes with growth."}
@@ -688,7 +836,7 @@ export default function Home() {
           </div>
 
           {/* 2-column grid */}
-          <div className="grid grid-cols-2 gap-x-20 gap-y-14">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-10 md:gap-y-14">
             {solutions.map((s, i) => (
               <div key={s.title}>
                 <div className="mb-4 text-neutral-800">{solutionIcons[i]}</div>
@@ -708,7 +856,7 @@ export default function Home() {
       {/* ABOUT */}
       <section id="company" className="py-24 px-6 md:px-12">
         <div className="max-w-[1240px] mx-auto">
-          <div className="grid grid-cols-2 gap-16 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-stretch">
 
             {/* Left */}
             <div className="flex flex-col">
@@ -729,7 +877,7 @@ export default function Home() {
               </SplitText>
 
               {/* About Us button */}
-              <TransitionLink href="/about" className="group flex items-center w-1/2 rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
+              <TransitionLink href="/about" className="group flex items-center w-2/3 md:w-1/2 rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
                 <span className="flex-1 px-6 py-4 text-[18px] font-[500] text-white group-hover:text-neutral-900 transition-colors duration-200" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>About Us</span>
                 <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
                   <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
@@ -744,20 +892,18 @@ export default function Home() {
               {/* Join us card */}
               <div className="mt-auto pt-8">
                 <div className="bg-[#f9f9f9] rounded-tl-2xl rounded-bl-2xl rounded-br-2xl p-8" style={{ clipPath: 'polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 0 100%)' }}>
-                  <SplitText className="text-[26px] font-[700] leading-[1.1] tracking-[-0.04em] mb-5 text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>{"Not sure where to start?"}</SplitText>
-                  <div className="flex items-center justify-between gap-8">
-                    <SplitText className="text-neutral-900 text-[14px] font-[500] leading-relaxed" stagger={0.03}>
-                      {"Book a free 30-minute discovery call to explore how we can help."}
-                    </SplitText>
-                    <button onClick={() => setShowCalendly(true)} className="group flex items-center flex-shrink-0 rounded-sm overflow-hidden border border-neutral-300 hover:border-neutral-500 transition-colors duration-200">
-                      <span className="px-5 py-3 text-[18px] font-[500] text-neutral-800 whitespace-nowrap" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Book a Call</span>
-                      <span className="m-2 w-8 h-8 flex-shrink-0 rounded-sm border border-neutral-200 text-neutral-600 relative overflow-hidden">
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto">
-                          <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </span>
-                    </button>
-                  </div>
+                  <SplitText className="text-[26px] font-[700] leading-[1.1] tracking-[-0.04em] mb-4 text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>{"Not sure where to start?"}</SplitText>
+                  <SplitText className="text-neutral-900 text-[14px] font-[500] leading-relaxed mb-6" stagger={0.03}>
+                    {"Book a free 30-minute discovery call to explore how we can help."}
+                  </SplitText>
+                  <button onClick={() => setShowCalendly(true)} className="group flex items-center rounded-sm overflow-hidden border border-neutral-300 hover:border-neutral-500 transition-colors duration-200">
+                    <span className="px-5 py-3 text-[18px] font-[500] text-neutral-800 whitespace-nowrap" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Book a Call</span>
+                    <span className="m-2 w-8 h-8 flex-shrink-0 rounded-sm border border-neutral-200 text-neutral-600 relative overflow-hidden">
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto">
+                        <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -804,17 +950,17 @@ export default function Home() {
         <div className="relative z-10 max-w-[1240px] mx-auto">
 
           {/* CTA row */}
-          <div className="py-20 flex items-center justify-between gap-12">
+          <div className="pt-24 pb-12 md:py-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 md:gap-12">
             <div>
-              <SplitText className="text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] text-white mb-4" style={{ fontFamily: "'Satoshi', sans-serif" }} stagger={0.07}>
+              <SplitText className="text-[28px] md:text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] text-white mb-4" style={{ fontFamily: "'Satoshi', sans-serif" }} stagger={0.07}>
                 {"Clarity starts with a conversation."}
               </SplitText>
               <SplitText className="text-white font-normal text-[15px] leading-relaxed max-w-[480px]" stagger={0.03}>
                 {"Book a free 30-minute discovery call and let's talk about where your team is stuck."}
               </SplitText>
             </div>
-            <button onClick={() => setShowCalendly(true)} className="group flex items-center flex-shrink-0 rounded-sm overflow-hidden bg-white hover:bg-[#069494] transition-colors duration-200">
-              <span className="flex-1 px-6 py-4 text-[18px] font-[500] text-neutral-900 group-hover:text-white transition-colors duration-200 whitespace-nowrap" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Start the Conversation</span>
+            <button onClick={() => setShowCalendly(true)} className="group flex items-center w-auto flex-shrink-0 rounded-sm overflow-hidden bg-white hover:bg-[#069494] transition-colors duration-200">
+              <span className="px-6 py-4 text-[18px] font-[500] text-neutral-900 group-hover:text-white transition-colors duration-200 whitespace-nowrap" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Start the Conversation</span>
               <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm bg-neutral-100 group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
                 <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
                   <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -830,7 +976,7 @@ export default function Home() {
           <div className="border-t border-neutral-800" />
 
           {/* Links grid */}
-          <div className="py-16 grid grid-cols-4 gap-12">
+          <div className="py-10 md:py-16 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
 
             {/* About */}
             <div>
