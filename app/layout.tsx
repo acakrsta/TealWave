@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Roboto_Mono } from "next/font/google";
 import "./globals.css";
+import { PageTransitionProvider } from "./components/PageTransition";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -13,9 +14,9 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Subduxion | AI Solutions & Data Consulting Company",
+  title: "TealWave | Delivery & Operational Consulting",
   description:
-    "Subduxion is a European AI consulting company. We design, build, and operate intelligent systems for organizations across industries and borders.",
+    "TealWave Solutions helps startups and scaling product teams build operational clarity, improve delivery, and scale sustainably.",
 };
 
 export default function RootLayout({
@@ -27,12 +28,14 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable} ${robotoMono.variable} h-full antialiased`}>
       <head>
         <link
-          href="https://api.fontshare.com/v2/css?f[]=satoshi@700,800,900&display=swap"
+          href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,800,900&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className="min-h-full flex flex-col bg-white text-neutral-900">
-        {children}
+        <PageTransitionProvider>
+          {children}
+        </PageTransitionProvider>
       </body>
     </html>
   );

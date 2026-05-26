@@ -1,8 +1,43 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { TransitionLink } from "./components/TransitionLink";
 
 const SCRAMBLE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function SplitText({
+  children,
+  className,
+  style,
+  stagger = 0.05,
+  delay = 0,
+}: {
+  children: string;
+  className?: string;
+  style?: React.CSSProperties;
+  stagger?: number;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-6%" });
+  const words = children.split(" ");
+  return (
+    <span ref={ref} className={className} style={{ ...style, display: "block" }}>
+      {words.map((word, i) => (
+        <motion.span
+          key={i}
+          style={{ display: "inline-block", marginRight: i < words.length - 1 ? "0.25em" : undefined }}
+          initial={{ opacity: 0.001, x: 20 }}
+          animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0.001, x: 20 }}
+          transition={{ duration: 0.45, delay: delay + i * stagger, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          {word}
+        </motion.span>
+      ))}
+    </span>
+  );
+}
 
 function ScrambleLink({ href, label }: { href: string; label: string }) {
   const [display, setDisplay] = useState(label);
@@ -50,166 +85,421 @@ function ScrambleLink({ href, label }: { href: string; label: string }) {
 
 const capabilities = [
   {
-    title: "AI Strategy & Consulting",
-    text: "Turn ambition into action with a clear AI roadmap. We align AI opportunities with your business priorities, define use cases with ROI, and guide you through adoption with confidence.",
+    title: "Delivery Stabilization Sprint",
+    text: "A focused 2-week engagement to identify delivery bottlenecks, operational friction, and alignment gaps — with a clear improvement roadmap at the end.",
   },
   {
-    title: "Data Enablement",
-    text: "Lay the foundation for AI success. From data strategy and architecture to governance and integration, we ensure your data is ready to power scalable, intelligent solutions.",
+    title: "Fractional Head of Delivery",
+    text: "Strategic delivery and operational leadership on a monthly retainer. For teams that need senior guidance without a full-time hire.",
   },
   {
-    title: "Managed AI Solutions",
-    text: "We architect, design, build, and manage AI agentic solutions tailored to your business, so you can focus on outcomes without the technological hassle.",
+    title: "Ways of Working Workshops",
+    text: "Facilitated sessions on communication clarity, ownership models, and healthy collaboration — for teams and leadership alike.",
   },
   {
-    title: "AI Proof of Concept",
-    text: "We co-create and test high-impact AI use cases, proving value in days or weeks. So you know what to invest in and how to expand with confidence.",
+    title: "AI Workflow & Operational Optimization",
+    text: "Practical AI integration into your delivery and operational systems — without adding more noise or complexity.",
   },
-  {
-    title: "AI Training & Learning",
-    text: "Make AI part of your DNA. We upskill teams, educate, and embed adoption practices so your people and technology grow stronger together.",
-  },
+];
+
+const capabilityIcons = [
+  /* Strategy – target */
+  <svg key="s" width="88" height="88" viewBox="0 0 88 88" fill="none">
+    <circle cx="44" cy="44" r="30" stroke="#d2d2d2" strokeWidth="3"/>
+    <circle cx="44" cy="44" r="19" stroke="#d2d2d2" strokeWidth="3"/>
+    <circle cx="44" cy="44" r="8" fill="#d2d2d2"/>
+    <line x1="44" y1="14" x2="44" y2="7"  stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
+    <line x1="74" y1="44" x2="81" y2="44" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
+    <line x1="44" y1="74" x2="44" y2="81" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
+    <line x1="14" y1="44" x2="7"  y2="44" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
+  </svg>,
+  /* Data – stacked cylinders */
+  <svg key="d" width="88" height="88" viewBox="0 0 88 88" fill="none">
+    <ellipse cx="44" cy="22" rx="24" ry="9" stroke="#d2d2d2" strokeWidth="3"/>
+    <path d="M20 22 L20 44" stroke="#d2d2d2" strokeWidth="3"/>
+    <path d="M68 22 L68 44" stroke="#d2d2d2" strokeWidth="3"/>
+    <ellipse cx="44" cy="44" rx="24" ry="9" stroke="#d2d2d2" strokeWidth="3"/>
+    <path d="M20 44 L20 66" stroke="#d2d2d2" strokeWidth="3"/>
+    <path d="M68 44 L68 66" stroke="#d2d2d2" strokeWidth="3"/>
+    <ellipse cx="44" cy="66" rx="24" ry="9" stroke="#d2d2d2" strokeWidth="3"/>
+  </svg>,
+  /* Managed – cloud */
+  <svg key="m" width="88" height="88" viewBox="0 0 88 88" fill="none">
+    <path d="M26 60 C14 60 12 48 20 42 C18 30 30 22 42 28 C44 18 54 14 64 20 C72 26 72 38 64 44 C72 46 74 56 68 62 C64 66 56 64 50 64 L28 64 Z" stroke="#d2d2d2" strokeWidth="3" fill="none" strokeLinejoin="round"/>
+  </svg>,
+  /* PoC – clipboard */
+  <svg key="p" width="88" height="88" viewBox="0 0 88 88" fill="none">
+    <rect x="24" y="18" width="40" height="54" rx="4" stroke="#d2d2d2" strokeWidth="3"/>
+    <rect x="32" y="13" width="24" height="12" rx="3" stroke="#d2d2d2" strokeWidth="3"/>
+    <polyline points="32,34 37,39 46,29" stroke="#d2d2d2" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="32" y1="48" x2="56" y2="48" stroke="#d2d2d2" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="32" y1="58" x2="48" y2="58" stroke="#d2d2d2" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>,
+  /* Training – sync arrows */
+  <svg key="t" width="88" height="88" viewBox="0 0 88 88" fill="none">
+    <path d="M60 28 A24 24 0 1 1 24 48" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
+    <polyline points="52,20 60,28 52,36" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M28 60 A24 24 0 1 1 64 40" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
+    <polyline points="36,68 28,60 36,52" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>,
 ];
 
 const solutions = [
   {
-    num: "01",
-    title: "Knowledge & Retrieval",
-    text: "Searches across documents and systems, extracts facts, links context, and returns reliable answers. Converts unstructured files into structured knowledge with memory for reuse.",
+    title: "Delivery & Execution",
+    text: "Reactive delivery, low predictability, constant context switching, and operational overload slowing your team down.",
   },
   {
-    num: "02",
-    title: "Workflow Automation",
-    text: "Digitizes manual data entry, reconciliations, and routine admin work in finance, HR, and operations. Cuts errors and cycle time with end to end automation.",
+    title: "Founder Bottlenecks",
+    text: "Leadership stuck in day-to-day operations instead of strategy. Unclear ownership making every decision land on one desk.",
   },
   {
-    num: "03",
-    title: "Workforce Productivity",
-    text: "Supports drafting, meeting capture, task routing, and team coordination inside existing tools. Raises throughput without adding headcount.",
+    title: "Communication & Alignment",
+    text: "Too many meetings with too little clarity. Misalignment between leadership and teams causing constant priority changes.",
   },
   {
-    num: "04",
-    title: "Monitoring & Compliance",
-    text: "Tracks KPIs, policies, and regulatory updates in real time. Builds audit trails, validates data against rules, and enforces governance.",
+    title: "AI & Workflow Complexity",
+    text: "AI adoption without operational structure. Fragmented workflows and manual work slowing teams down without clear ROI.",
   },
   {
-    num: "05",
-    title: "Decision & Planning",
-    text: "Combines forecasting, scenario modeling, and optimization to guide plans, schedules, and pricing. Moves decisions from periodic to continuous and data driven.",
+    title: "Cross-functional Friction",
+    text: "Departments working in silos. Handoffs breaking down. No shared visibility across teams and functions.",
   },
   {
-    num: "06",
-    title: "Operations & Execution",
-    text: "Runs service workflows, approvals, and case resolution across systems. Orchestrates handoffs between people and software to shorten cycle times.",
-  },
-  {
-    num: "07",
-    title: "Cost & Risk Management",
-    text: "Analyzes spend, contracts, and transactions to surface leakage, fraud, and exposure. Prioritizes actions that lower run rate and improve margin at controlled risk.",
-  },
-  {
-    num: "08",
-    title: "Content Intelligence",
-    text: "Generates, translates, and explains content for reports, contracts, and learning materials. Standardizes structure and tone while keeping provenance intact.",
+    title: "Team Sustainability",
+    text: "Burnout patterns, constant urgency culture, reduced focus time. High performance becoming unsustainable over time.",
   },
 ];
 
-const technologies = [
-  "Microsoft", "Mistral", "Anthropic", "Meta", "Databricks", "CrewAI",
-  "OpenAI", "Google", "C3.ai", "Glean", "Gemini", "AWS",
+const solutionIcons = [
+  <svg key="kr" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>,
+  <svg key="wa" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+    <circle cx="8.5" cy="7" r="4"/>
+    <line x1="18" y1="8" x2="23" y2="13"/>
+    <line x1="23" y1="8" x2="18" y2="13"/>
+  </svg>,
+  <svg key="wp" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>,
+  <svg key="mc" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="4" width="16" height="16" rx="2"/>
+    <rect x="9" y="9" width="6" height="6"/>
+    <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
+    <line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/>
+    <line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/>
+    <line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
+  </svg>,
+  <svg key="dp" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="18" cy="6" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="12" cy="18" r="3"/>
+    <path d="M6 9v1a6 6 0 0 0 6 6"/><path d="M18 9v1a6 6 0 0 1-6 6"/>
+  </svg>,
+  <svg key="oe" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+  </svg>,
 ];
 
-const processSteps = [
-  {
-    num: "/01",
-    title: "Envision",
-    text: "It begins by understanding your goals and challenges to identify where AI can create the most value for your organization. This step clarifies priorities, exposes inefficiencies, and reveals new monetization opportunities.",
-  },
-  {
-    num: "/02",
-    title: "Blueprint",
-    text: "From shaping a roadmap to addressing urgent challenges, we design and architect AI solutions by identifying both everyday inefficiencies and mission-critical pain points.",
-  },
-  {
-    num: "/03",
-    title: "Deploy",
-    text: "We build and integrate AI solutions into new or existing workflows, ensuring secure data foundations, current IT system integration, and measurable results from day one.",
-  },
-  {
-    num: "/04",
-    title: "Support",
-    text: "We partner ongoing to optimize, scale, and govern your AI ecosystem, nurturing continuous improvement and innovation to realize the dual dividend of customer delight and empowered teams.",
-  },
-];
 
-const faqs = [
-  {
-    q: "What industries does Subduxion work with?",
-    a: "We work across a wide range of industries including financial services, manufacturing, retail, healthcare, and professional services. Our solutions are tailored to the specific challenges and regulatory requirements of each sector.",
-  },
-  {
-    q: "How long does it take to see results?",
-    a: "With our AI Proof of Concept offering, you can see demonstrable value within days or weeks. Full deployments typically show measurable ROI within the first quarter of operation, depending on the complexity and scope of the solution.",
-  },
-  {
-    q: "Are your solutions EU AI Act compliant?",
-    a: "Yes. Compliance is built into our delivery process. We design solutions with data sovereignty, privacy by design, and EU AI Act requirements at the forefront, ensuring your organization is ready for the regulatory landscape.",
-  },
-  {
-    q: "Do you work with existing systems or require new infrastructure?",
-    a: "We integrate with your existing IT landscape wherever possible. Our vendor-independent approach means we select the right tools for your environment, whether that involves cloud platforms you already use or introducing new capabilities alongside current systems.",
-  },
-  {
-    q: "What is the difference between a Managed AI Solution and a Proof of Concept?",
-    a: "A Proof of Concept is a time-boxed engagement designed to validate a specific AI use case with minimal investment. A Managed AI Solution is a full-scale, production-grade system that we build, deploy, and continue to operate and optimize on your behalf.",
-  },
-];
 
-const news = [
-  {
-    tag: "INSIGHTS",
-    date: "MAR 31, 2026",
-    title: "Why We Built an Autonomous Sales AI, and What It Means for B2B Teams in Europe",
-    excerpt: "Most AI sales tools solve the wrong problem. They automate the output without rethinking the workflow. We spent six months building one that does both.",
-  },
-  {
-    tag: "TIPS",
-    date: "FEB 22, 2026",
-    title: "Are You AI Act Ready, or Just ‘Using AI’ Without Control?",
-    excerpt: "Most companies are integrating AI into existing apps and workflows. Learn how to assess your readiness and what real compliance looks like in practice.",
-  },
-  {
-    tag: "INSIGHTS",
-    date: "JAN 13, 2026",
-    title: "Understanding AI value starts with GDPval",
-    excerpt: "GDPval is OpenAI’s economic framework for measuring AI value: does AI reduce the cost of intelligence? Here is what it means for your AI investments.",
-  },
-];
+function ChallengesSection() {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end end"],
+  });
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+  // Full 0→1 range defined explicitly — no extrapolation possible
+  const y1  = useTransform(scrollYProgress, [0, 0.04, 0.20, 1], [60, 60, 0, 0]);
+  const op1 = useTransform(scrollYProgress, [0, 0.04, 0.20, 1], [0,  0,  1, 1]);
+
+  const y2  = useTransform(scrollYProgress, [0, 0.26, 0.42, 1], [60, 60, 0, 0]);
+  const op2 = useTransform(scrollYProgress, [0, 0.26, 0.42, 1], [0,  0,  1, 1]);
+
+  const y3  = useTransform(scrollYProgress, [0, 0.50, 0.66, 1], [60, 60, 0, 0]);
+  const op3 = useTransform(scrollYProgress, [0, 0.50, 0.66, 1], [0,  0,  1, 1]);
+
+  const y4  = useTransform(scrollYProgress, [0, 0.74, 0.90, 1], [60, 60, 0, 0]);
+  const op4 = useTransform(scrollYProgress, [0, 0.74, 0.90, 1], [0,  0,  1, 1]);
+
+  const pills = [
+    { text: "Delivery becoming reactive and unpredictable",  top: "22%", left: "24%", y: y1, opacity: op1 },
+    { text: "Founders stuck as the operational bottleneck",  top: "25%", left: "76%", y: y2, opacity: op2 },
+    { text: "Teams overwhelmed by constant context switching", top: "75%", left: "31%", y: y3, opacity: op3 },
+    { text: "Priorities changing faster than work gets done", top: "78%", left: "70%", y: y4, opacity: op4 },
+  ];
+
   return (
-    <p className="text-[11px] tracking-[0.15em] uppercase text-neutral-400 mb-3">
-      {children}
-    </p>
+    <section ref={ref} className="relative bg-white" style={{ height: "4100px" }}>
+      <div className="sticky top-0 overflow-hidden" style={{ height: "900px" }}>
+        {/* Large centered text */}
+        <div className="absolute inset-0 flex items-center justify-center px-8 pointer-events-none">
+          <p
+            className="w-full max-w-[1240px] px-8 text-center text-[clamp(20px,2.1vw,28px)] font-[700] leading-[1.2] tracking-[-0.01em] text-[#0f0f0f] whitespace-nowrap"
+            style={{ fontFamily: "'Satoshi', sans-serif" }}
+          >
+            We recognize the operational friction scaling teams face. That is why sustainable delivery starts here.
+          </p>
+        </div>
+
+        {/* Floating pills – each fades + slides up in its own scroll window */}
+        {pills.map((pill, i) => (
+          <div
+            key={i}
+            className="absolute -translate-x-1/2 -translate-y-1/2 z-10"
+            style={{ top: pill.top, left: pill.left }}
+          >
+            <motion.div style={{ y: pill.y, opacity: pill.opacity }}>
+              <div
+                className="flex items-center gap-3 px-5 py-3.5"
+                style={{ backgroundColor: "#f3f3f3" }}
+              >
+                <svg width="18" height="17" viewBox="0 0 18 17" fill="none" className="flex-shrink-0">
+                  <path d="M9 1L17.3 16H0.7L9 1Z" fill="#ff9500" />
+                  <line x1="9" y1="7" x2="9" y2="11.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                  <circle cx="9" cy="13.5" r="0.8" fill="white" />
+                </svg>
+                <span
+                  className="text-[18px] font-[500] text-[#131313] whitespace-nowrap"
+                  style={{ fontFamily: "'Satoshi', sans-serif" }}
+                >
+                  {pill.text}
+                </span>
+              </div>
+            </motion.div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
-function SectionTitle({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function ProcessSection() {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end end"],
+  });
+
+  const op1 = useTransform(scrollYProgress, [0, 0, 0.22, 0.28, 1],       [1, 1, 1, 0, 0]);
+  const op2 = useTransform(scrollYProgress, [0, 0.22, 0.28, 0.47, 0.53, 1], [0, 0, 1, 1, 0, 0]);
+  const op3 = useTransform(scrollYProgress, [0, 0.47, 0.53, 0.72, 0.78, 1], [0, 0, 1, 1, 0, 0]);
+  const op4 = useTransform(scrollYProgress, [0, 0.72, 0.78, 1],           [0, 0, 1, 1]);
+
+  const steps = [
+    {
+      num: "/01", opacity: op1,
+      title: "Discovery",
+      text: "We start by understanding your operational challenges, delivery patterns, and where friction is slowing your team down.",
+      illustration: (
+        <svg width="280" height="280" viewBox="0 0 280 280" fill="none">
+          <circle cx="140" cy="140" r="118" stroke="#069494" strokeWidth="1"   strokeOpacity="0.12"/>
+          <circle cx="140" cy="140" r="88"  stroke="#069494" strokeWidth="1"   strokeOpacity="0.22"/>
+          <circle cx="140" cy="140" r="58"  stroke="#069494" strokeWidth="1.5" strokeOpacity="0.38"/>
+          <circle cx="140" cy="140" r="28"  stroke="#069494" strokeWidth="2"   strokeOpacity="0.6"/>
+          <line x1="140" y1="22"  x2="140" y2="258" stroke="#069494" strokeWidth="1" strokeOpacity="0.1"/>
+          <line x1="22"  y1="140" x2="258" y2="140" stroke="#069494" strokeWidth="1" strokeOpacity="0.1"/>
+          <path d="M140 140 L230 82 A105 105 0 0 1 245 140 Z" fill="#069494" opacity="0.07"/>
+          <line x1="140" y1="140" x2="230" y2="82" stroke="#069494" strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round"/>
+          <circle cx="140" cy="140" r="7" fill="#069494" opacity="0.85"/>
+        </svg>
+      ),
+    },
+    {
+      num: "/02", opacity: op2,
+      title: "Assessment",
+      text: "We review your workflows, communication systems, ownership structures, and delivery health in depth.",
+      illustration: (
+        <svg width="256" height="256" viewBox="0 0 256 256" fill="none">
+          {[0,1,2,3].map(row =>
+            [0,1,2,3].map(col => {
+              const x = 14 + col * 58, y = 14 + row * 58;
+              const idx = row * 4 + col;
+              const filled = idx < 9;
+              const opacity = filled ? Math.max(0.25, 0.85 - idx * 0.07) : 0;
+              return filled
+                ? <rect key={`${row}-${col}`} x={x} y={y} width="52" height="52" rx="4" fill="#069494" opacity={opacity}/>
+                : <rect key={`${row}-${col}`} x={x} y={y} width="52" height="52" rx="4" stroke="#069494" strokeWidth="1.5" strokeOpacity={0.18 - idx * 0.005}/>;
+            })
+          )}
+        </svg>
+      ),
+    },
+    {
+      num: "/03", opacity: op3,
+      title: "Recommendations",
+      text: "We define priorities, improvements, and a clear engagement structure tailored to your organization.",
+      illustration: (
+        <svg width="320" height="180" viewBox="0 0 320 180" fill="none">
+          <defs>
+            <linearGradient id="tw3" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#069494" stopOpacity="0.25"/>
+              <stop offset="100%" stopColor="#069494" stopOpacity="1"/>
+            </linearGradient>
+          </defs>
+          <path d="M30 155 C70 155 90 55 160 55 C230 55 250 105 290 80" stroke="url(#tw3)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+          <circle cx="30"  cy="155" r="10" fill="white" stroke="#069494" strokeWidth="2" strokeOpacity="0.35"/>
+          <circle cx="30"  cy="155" r="5"  fill="#069494" opacity="0.35"/>
+          <circle cx="110" cy="105" r="10" fill="white" stroke="#069494" strokeWidth="2" strokeOpacity="0.55"/>
+          <circle cx="110" cy="105" r="5"  fill="#069494" opacity="0.55"/>
+          <circle cx="205" cy="57"  r="10" fill="white" stroke="#069494" strokeWidth="2" strokeOpacity="0.8"/>
+          <circle cx="205" cy="57"  r="5"  fill="#069494" opacity="0.8"/>
+          <circle cx="290" cy="80"  r="12" fill="#069494" opacity="0.9"/>
+          <polyline points="283,72 291,80 283,88" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      ),
+    },
+    {
+      num: "/04", opacity: op4,
+      title: "Collaboration",
+      text: "Hands-on operational support, facilitation, delivery leadership, and workflow optimization — together.",
+      illustration: (
+        <svg width="280" height="240" viewBox="0 0 280 240" fill="none">
+          <circle cx="105" cy="120" r="88" fill="#069494" fillOpacity="0.18"/>
+          <circle cx="175" cy="120" r="88" fill="#069494" fillOpacity="0.18"/>
+          <circle cx="105" cy="120" r="88" stroke="#069494" strokeWidth="1.5" strokeOpacity="0.4"/>
+          <circle cx="175" cy="120" r="88" stroke="#069494" strokeWidth="1.5" strokeOpacity="0.4"/>
+          <circle cx="105" cy="120" r="5" fill="#069494" opacity="0.6"/>
+          <circle cx="175" cy="120" r="5" fill="#069494" opacity="0.6"/>
+        </svg>
+      ),
+    },
+  ];
+
   return (
-    <h2 className={`text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-4 ${className}`}>
-      {children}
-    </h2>
+    <section ref={ref} id="how-we-work" className="relative bg-white" style={{ height: "400vh" }}>
+      <div className="sticky top-0 overflow-hidden" style={{ height: "100vh" }}>
+
+        {/* Section label */}
+        <div className="absolute top-8 left-0 right-0">
+          <div className="max-w-[1240px] mx-auto px-6 md:px-12">
+            <div className="relative w-full h-[5px] mb-3">
+              <div className="absolute left-0 bottom-0 w-full h-px bg-[#e5e5e5]" />
+              <svg className="absolute left-0 top-0 flex-shrink-0" width="183" height="5" viewBox="0 0 183 5" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 0 0 L 178 0 L 183 5 L 0 5 Z" fill="#e5e5e5"/>
+              </svg>
+            </div>
+            <p className="text-[14px] font-normal tracking-[0.1em] uppercase text-neutral-900" style={{ fontFamily: "var(--font-roboto-mono), monospace" }}>/HOW WE WORK</p>
+          </div>
+        </div>
+
+        {steps.map((step) => (
+          <motion.div key={step.num} style={{ opacity: step.opacity }} className="absolute inset-0">
+            <div className="max-w-[1240px] mx-auto px-6 md:px-12 h-full relative">
+
+              {/* Step number */}
+              <div className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2">
+                <span
+                  className="text-[52px] font-[700] leading-none tracking-[-0.04em] text-neutral-200"
+                  style={{ fontFamily: "'Satoshi', sans-serif" }}
+                >
+                  {step.num}
+                </span>
+              </div>
+
+              {/* Illustration */}
+              <div className="absolute left-[38%] top-[46%] -translate-x-1/2 -translate-y-1/2">
+                {step.illustration}
+              </div>
+
+              {/* Text */}
+              <div className="absolute right-6 md:right-12 bottom-[18%] max-w-[380px]">
+                <h3
+                  className="text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] mb-4 text-neutral-900"
+                  style={{ fontFamily: "'Satoshi', sans-serif" }}
+                >
+                  {step.title}
+                </h3>
+                <p className="text-neutral-900 text-[16px] font-[500] leading-relaxed">{step.text}</p>
+              </div>
+
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+
+function CalendlyModal({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/75" onClick={onClose} />
+      <div className="relative w-full max-w-[1100px] rounded-2xl overflow-hidden shadow-2xl bg-[#0f0f0f]">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+        </button>
+        <iframe
+          src="https://calendly.com/tealwavesolutions/30min?hide_gdpr_banner=1&primary_color=069494"
+          style={{
+            display: "block",
+            border: "none",
+            marginTop: "-48px",
+            marginLeft: "-48px",
+            marginBottom: "-48px",
+            width: "calc(100% + 96px)",
+            height: "796px",
+          }}
+        />
+      </div>
+    </div>
   );
 }
 
 export default function Home() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [showCalendly, setShowCalendly] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
+  const [navHidden, setNavHidden] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
+  const lastScrollY = useRef(0);
+  const { scrollYProgress: footerProgress } = useScroll({
+    target: footerRef,
+    offset: ["start end", "end end"],
+  });
+  const footerImgOpacity = useTransform(footerProgress, [0, 0.6, 1], [0, 0, 1]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      if (heroRef.current) {
+        setPastHero(currentY > heroRef.current.offsetHeight);
+      }
+      setNavHidden(currentY > lastScrollY.current && currentY > 72);
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <>
+      {showCalendly && <CalendlyModal onClose={() => setShowCalendly(false)} />}
+
       {/* NAV */}
-      <nav className="fixed top-3 left-0 right-0 z-50 h-12 bg-[#f3f3f3]">
-        <div className="max-w-[1300px] mx-auto px-8 h-full flex items-center justify-between relative">
+      <motion.nav
+        animate={{ y: navHidden ? "-100%" : "0%" }}
+        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+        className={`fixed top-0 left-0 right-0 z-50 h-[72px] ${pastHero ? "bg-white border-b border-neutral-200" : "bg-[#f9f9f9]"}`}
+      >
+        <div className="max-w-[1240px] mx-auto px-8 h-full flex items-center justify-between relative">
         {/* Logo */}
         <a href="/" className="flex-shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -219,11 +509,10 @@ export default function Home() {
         {/* Links */}
         <ul className="hidden md:flex items-center gap-12 list-none absolute left-1/2 -translate-x-1/2">
           {[
-            { label: "SERVICES", href: "#services" },
-            { label: "USE CASES", href: "#solutions" },
-            { label: "COMPANY", href: "#company" },
-            { label: "NEWS", href: "#news" },
-            { label: "CAREERS", href: "#careers" },
+            { label: "SERVICES", href: "/services" },
+            { label: "USE CASES", href: "/services#solutions" },
+            { label: "HOW WE WORK", href: "#how-we-work" },
+            { label: "ABOUT", href: "/about" },
           ].map((l) => (
             <li key={l.label}>
               <ScrambleLink href={l.href} label={l.label} />
@@ -246,9 +535,9 @@ export default function Home() {
             </svg>
           </button>
           {/* CTA */}
-          <a href="#contact" className="group flex items-center rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
-            <span className="px-4 py-2 text-[16px] font-normal text-white group-hover:text-neutral-900 transition-colors duration-200">Get in touch</span>
-            <span className="m-1 w-7 h-7 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
+          <TransitionLink href="/contact" className="group flex items-center rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
+            <span className="flex-1 px-4 py-2 text-[18px] font-[500] text-white group-hover:text-neutral-900 transition-colors duration-200" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Get in touch</span>
+            <span className="m-2 w-7 h-7 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
                 <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -256,18 +545,18 @@ export default function Home() {
                 <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </span>
-          </a>
+          </TransitionLink>
         </div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* HERO */}
-      <section className="bg-[#f3f3f3] pt-12">
-        <div className="max-w-[1300px] mx-auto w-full px-8 pt-12 pb-16">
+      <section ref={heroRef} className="bg-[#f9f9f9] pt-12">
+        <div className="max-w-[1240px] mx-auto w-full px-8 pt-12 pb-16">
 
           {/* Row 1: Heading + small image */}
           <div className="flex items-start gap-10 mb-24">
-            <h1 className="flex-[3] text-[clamp(48px,5.6vw,80px)] font-[700] leading-[1.02] tracking-[-0.03em] text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>
+            <h1 className="flex-[3] text-[64px] font-[700] leading-[1.02] tracking-[-0.03em] text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>
               TealWave helps scaling teams build operational clarity without the chaos.
             </h1>
             <div className="flex-shrink-0 w-[260px] xl:w-[300px] self-start rounded-sm overflow-hidden aspect-[4/3]">
@@ -286,15 +575,15 @@ export default function Home() {
 
             {/* Content */}
             <div className="flex-1 flex flex-col gap-10" style={{ fontFamily: "'Satoshi', sans-serif" }}>
-              <p className="text-[20px] font-normal text-neutral-700 leading-[1.6]">
+              <p className="text-[16px] font-[500] text-neutral-900 leading-[1.6]">
                 Strategic delivery and operational consulting for startups and scaling product teams. We reduce friction, improve visibility, and help founders stop being the bottleneck.
               </p>
 
               {/* Buttons */}
               <div className="flex gap-4">
-                <a href="#contact" className="group flex items-center justify-between flex-1 rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
-                  <span className="px-6 py-4 text-[18px] font-normal text-white group-hover:text-neutral-900 transition-colors duration-200">Get in Touch</span>
-                  <span className="m-1 w-10 h-10 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
+                <TransitionLink href="/contact" className="group flex items-center flex-1 rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
+                  <span className="flex-1 px-6 py-4 text-[18px] font-[500] text-white group-hover:text-neutral-900 transition-colors duration-200" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Get in Touch</span>
+                  <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
                     <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
                       <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
@@ -302,10 +591,10 @@ export default function Home() {
                       <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </span>
-                </a>
-                <a href="#services" className="group flex items-center justify-between flex-1 border border-neutral-300 text-neutral-800 hover:bg-neutral-50 transition-colors rounded-sm overflow-hidden">
-                  <span className="px-6 py-4 text-[18px] font-normal">What We Do</span>
-                  <span className="m-1 w-10 h-10 flex-shrink-0 rounded-sm border border-neutral-200 text-neutral-600 relative overflow-hidden">
+                </TransitionLink>
+                <a href="#services" className="group flex items-center flex-1 border border-neutral-300 text-neutral-800 hover:bg-neutral-50 transition-colors rounded-sm overflow-hidden">
+                  <span className="flex-1 px-6 py-4 text-[18px] font-[500]" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>What We Do</span>
+                  <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm border border-neutral-200 text-neutral-600 relative overflow-hidden">
                     <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
                       <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
@@ -320,304 +609,294 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PROBLEMS */}
-      <section className="bg-neutral-50 border-y border-neutral-200 py-20 px-6 md:px-12">
-        <div className="max-w-[1300px] mx-auto">
-          <SectionLabel>Challenges we solve</SectionLabel>
-          <p className="text-neutral-500 text-base max-w-lg mb-12">
-            We recognize the challenges you face. That is why your path to impact with AI starts here.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border border-neutral-200 divide-x divide-y divide-neutral-200">
-            {[
-              "Repetitive work slowing down teams",
-              "Slow decisions hurting customer experience",
-              "Scaling by adding extra headcount",
-              "Technology spend without measurable ROI",
-            ].map((p) => (
-              <div key={p} className="flex items-start gap-3 p-7 bg-white">
-                <span className="mt-2 w-1.5 h-1.5 rounded-full bg-neutral-300 flex-shrink-0" />
-                <p className="text-neutral-600 text-[14px]">{p}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PROCESS */}
-      <section id="process" className="py-24 px-6 md:px-12">
-        <div className="max-w-[1300px] mx-auto">
-          <SectionLabel>How we work</SectionLabel>
-          <SectionTitle>Your path to AI impact</SectionTitle>
-          <p className="text-neutral-500 text-base max-w-xl mb-16">
-            From first conversation to full deployment, we guide you every step of the way.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-            {processSteps.map((s) => (
-              <div key={s.num}>
-                <p className="text-[11px] tracking-[0.12em] text-neutral-300 mb-4">{s.num}</p>
-                <p className="text-lg font-bold mb-3">{s.title}</p>
-                <p className="text-neutral-500 text-[14px] leading-relaxed">{s.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* CHALLENGES */}
+      <ChallengesSection />
 
       {/* CAPABILITIES */}
-      <section id="services" className="py-24 px-6 md:px-12 bg-neutral-50 border-y border-neutral-200">
-        <div className="max-w-[1300px] mx-auto">
-          <SectionLabel>/OUR SERVICES</SectionLabel>
-          <SectionTitle>Capabilities</SectionTitle>
-          <p className="text-neutral-500 text-base max-w-xl mb-16">
-            We design and deliver AI solutions that solve real business challenges, create measurable impact, and build capabilities that will last inside your organization.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border border-neutral-200 divide-x divide-y divide-neutral-200">
-            {capabilities.map((c) => (
-              <div key={c.title} className="p-8 bg-white hover:bg-neutral-50 transition-colors">
-                <p className="font-bold text-[15px] mb-3">{c.title}</p>
-                <p className="text-neutral-500 text-[13px] leading-relaxed">{c.text}</p>
+      <section id="services" className="px-6 md:px-12 bg-white pb-24">
+        <div className="max-w-[1240px] mx-auto">
+
+          {/* Top line + label */}
+          <div className="mb-5">
+            <div className="relative w-full h-[5px] mb-3">
+              <div className="absolute left-0 bottom-0 w-full h-px bg-[#e5e5e5]" />
+              <svg className="absolute left-0 top-0 flex-shrink-0" width="183" height="5" viewBox="0 0 183 5" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 0 0 L 178 0 L 183 5 L 0 5 Z" fill="#e5e5e5"/>
+              </svg>
+            </div>
+            <SplitText className="text-[14px] font-normal tracking-[0.1em] uppercase text-neutral-900" style={{ fontFamily: "var(--font-roboto-mono), monospace" }} stagger={0.04}>/OUR SERVICES</SplitText>
+          </div>
+
+          {/* Title + description row */}
+          <div className="flex flex-row items-center justify-between gap-6 pb-12 mb-12">
+            <SplitText className="flex-[0_0_auto] text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>Services</SplitText>
+            <SplitText className="flex-[1_0_0px] max-w-[500px] text-neutral-900 text-[16px] font-[500] leading-relaxed" stagger={0.03}>
+              {"We design operational systems that reduce friction, improve delivery clarity, and help teams scale sustainably — without burning people out."}
+            </SplitText>
+          </div>
+
+          {/* Row 1: 2 large cards */}
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            {capabilities.slice(0, 2).map((c, i) => (
+              <div key={c.title} className="bg-[#f9f9f9] rounded-2xl p-8 flex flex-col min-h-[380px]">
+                <div className="flex-1 flex items-center justify-center py-4">
+                  {capabilityIcons[i]}
+                </div>
+                <SplitText className="text-[26px] font-[700] leading-[1.1] tracking-[-0.04em] mb-3 text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>{c.title}</SplitText>
+                <SplitText className="text-neutral-900 text-[14px] font-[500] leading-relaxed" stagger={0.03}>{c.text}</SplitText>
               </div>
             ))}
           </div>
+
+          {/* Row 2: 2 smaller cards */}
+          <div className="grid grid-cols-2 gap-3">
+            {capabilities.slice(2).map((c, i) => (
+              <div key={c.title} className="bg-[#f9f9f9] rounded-2xl p-8 flex flex-col min-h-[300px]">
+                <div className="flex-1 flex items-center justify-center py-4">
+                  {capabilityIcons[i + 2]}
+                </div>
+                <SplitText className="text-[26px] font-[700] leading-[1.1] tracking-[-0.04em] mb-3 text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>{c.title}</SplitText>
+                <SplitText className="text-neutral-900 text-[14px] font-[500] leading-relaxed" stagger={0.03}>{c.text}</SplitText>
+              </div>
+            ))}
+          </div>
+
         </div>
       </section>
 
       {/* SOLUTIONS */}
-      <section id="solutions" className="py-24 px-6 md:px-12">
-        <div className="max-w-[1300px] mx-auto">
-          <SectionLabel>/SOLUTIONS</SectionLabel>
-          <SectionTitle>Use cases</SectionTitle>
-          <p className="text-neutral-500 text-base max-w-xl mb-16">
-            We focus on domains where agents solve entrenched business problems and unlock measurable value.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border border-neutral-200 divide-x divide-y divide-neutral-200">
-            {solutions.map((s) => (
-              <div key={s.num} className="p-7 hover:bg-neutral-50 transition-colors">
-                <p className="text-[11px] tracking-[0.12em] text-neutral-300 mb-3">{s.num}</p>
-                <p className="font-bold text-[15px] mb-2">{s.title}</p>
-                <p className="text-neutral-500 text-[13px] leading-relaxed">{s.text}</p>
+      <section id="solutions" className="px-6 md:px-12 bg-white pb-24">
+        <div className="max-w-[1240px] mx-auto">
+
+          {/* Top line + label */}
+          <div className="mb-5">
+            <div className="relative w-full h-[5px] mb-3">
+              <div className="absolute left-0 bottom-0 w-full h-px bg-[#e5e5e5]" />
+              <svg className="absolute left-0 top-0 flex-shrink-0" width="183" height="5" viewBox="0 0 183 5" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 0 0 L 178 0 L 183 5 L 0 5 Z" fill="#e5e5e5"/>
+              </svg>
+            </div>
+            <SplitText className="text-[14px] font-normal tracking-[0.1em] uppercase text-neutral-900" style={{ fontFamily: "var(--font-roboto-mono), monospace" }} stagger={0.04}>/SOLUTIONS</SplitText>
+          </div>
+
+          {/* Title + description */}
+          <div className="flex flex-row items-center justify-between gap-6 mb-16">
+            <SplitText className="flex-[0_0_auto] text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>Use cases</SplitText>
+            <SplitText className="flex-[1_0_0px] max-w-[500px] text-neutral-900 text-[16px] font-[500] leading-relaxed" stagger={0.03}>
+              {"We work with scaling teams navigating the operational friction that comes with growth."}
+            </SplitText>
+          </div>
+
+          {/* 2-column grid */}
+          <div className="grid grid-cols-2 gap-x-20 gap-y-14">
+            {solutions.map((s, i) => (
+              <div key={s.title}>
+                <div className="mb-4 text-neutral-800">{solutionIcons[i]}</div>
+                <SplitText className="text-[26px] font-[700] leading-[1.1] tracking-[-0.04em] mb-3 text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>{s.title}</SplitText>
+                <SplitText className="text-neutral-900 text-[14px] font-[500] leading-relaxed max-w-[480px]" stagger={0.03}>{s.text}</SplitText>
               </div>
             ))}
           </div>
+
         </div>
       </section>
 
-      {/* TECHNOLOGIES */}
-      <section id="technologies" className="py-24 px-6 md:px-12 bg-neutral-50 border-y border-neutral-200">
-        <div className="max-w-[1300px] mx-auto">
-          <SectionLabel>/TECHNOLOGIES</SectionLabel>
-          <SectionTitle>Vendor independent solutions</SectionTitle>
-          <p className="text-neutral-500 text-base max-w-xl mb-16">
-            We select the right technology for each challenge &mdash; not the most convenient one.
-          </p>
-          <div className="flex flex-wrap border border-neutral-200">
-            {technologies.map((t) => (
-              <div
-                key={t}
-                className="flex-1 basis-[120px] flex items-center justify-center py-7 px-5 border border-neutral-200 text-[12px] font-bold tracking-widest uppercase text-neutral-400 hover:text-neutral-900 hover:bg-white transition-colors"
-              >
-                {t}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* PROCESS */}
+      <ProcessSection />
+
 
       {/* ABOUT */}
       <section id="company" className="py-24 px-6 md:px-12">
-        <div className="max-w-[1300px] mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div>
-              <SectionLabel>/ABOUT US</SectionLabel>
-              <SectionTitle>The partner you have been looking for</SectionTitle>
-              <p className="text-neutral-500 text-base max-w-lg mb-5">
-                We bring together a wealth of experience to make technology work. Partnering with organizations to design bespoke solutions that can meet their highest standards.
-              </p>
-              <p className="text-neutral-500 text-[14px] leading-relaxed mb-5">
-                Subduxion is a European AI consulting company and managed solutions provider based at the High Tech Campus in Eindhoven. We design, build, and operate intelligent systems for organizations across industries and borders.
-              </p>
-              <p className="text-neutral-500 text-[14px] leading-relaxed mb-5">
-                Applied AI built on data sovereignty, privacy, security and EU ready governance. We deliver copilots, AI agents and workflow automation that boost productivity, customer experience and knowledge work.
-              </p>
-              <p className="font-bold text-[14px] tracking-wide mb-8">Data you can rely on. AI you can trust.</p>
-              <div className="flex gap-3">
-                <a
-                  href="#contact"
-                  className="bg-neutral-900 text-white text-[13px] font-semibold px-6 py-3 rounded hover:bg-neutral-700 transition-colors"
-                >
-                  Get in Touch
-                </a>
-                <a
-                  href="#services"
-                  className="border border-neutral-300 text-neutral-700 text-[13px] font-semibold px-6 py-3 rounded hover:bg-neutral-50 transition-colors"
-                >
-                  What We Do
-                </a>
+        <div className="max-w-[1240px] mx-auto">
+          <div className="grid grid-cols-2 gap-16 items-stretch">
+
+            {/* Left */}
+            <div className="flex flex-col">
+              <div className="mb-5">
+                <div className="relative w-full h-[5px] mb-3">
+                  <div className="absolute left-0 bottom-0 w-full h-px bg-[#e5e5e5]" />
+                  <svg className="absolute left-0 top-0 flex-shrink-0" width="183" height="5" viewBox="0 0 183 5" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M 0 0 L 178 0 L 183 5 L 0 5 Z" fill="#e5e5e5"/>
+                  </svg>
+                </div>
+                <SplitText className="text-[14px] font-normal tracking-[0.1em] uppercase text-neutral-900" style={{ fontFamily: "var(--font-roboto-mono), monospace" }} stagger={0.04}>/ABOUT US</SplitText>
               </div>
-            </div>
-            <div className="aspect-[4/3] bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-300 text-sm">
-              Team photo
-            </div>
-          </div>
-        </div>
-      </section>
+              <SplitText className="text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] mb-6 text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }} stagger={0.06}>
+                {"The consultant your team has been waiting for."}
+              </SplitText>
+              <SplitText className="text-neutral-900 text-[16px] font-[500] leading-relaxed mb-8" stagger={0.03}>
+                {"Ivana Fisic works at the intersection of delivery leadership, operational systems, AI-enabled workflows, and healthy team dynamics — helping organizations scale without losing clarity or burning people out."}
+              </SplitText>
 
-      {/* TRUSTED BY */}
-      <div className="border-y border-neutral-200 py-12 px-6 md:px-12">
-        <div className="max-w-[1300px] mx-auto">
-          <p className="text-[11px] tracking-[0.15em] uppercase text-neutral-300 text-center mb-8">
-            /TRUSTED BY
-          </p>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {["Client A", "Client B", "Client C", "Client D", "Client E", "Client F"].map((c) => (
-              <div
-                key={c}
-                className="px-6 py-3 border border-neutral-200 text-[11px] tracking-widest uppercase text-neutral-300"
-              >
-                {c}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+              {/* About Us button */}
+              <TransitionLink href="/about" className="group flex items-center w-1/2 rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
+                <span className="flex-1 px-6 py-4 text-[18px] font-[500] text-white group-hover:text-neutral-900 transition-colors duration-200" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>About Us</span>
+                <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
+                  <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
+                    <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out -translate-x-10 translate-y-10 group-hover:translate-x-0 group-hover:translate-y-0">
+                    <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+              </TransitionLink>
 
-      {/* NEWS */}
-      <section id="news" className="py-24 px-6 md:px-12 bg-neutral-50 border-b border-neutral-200">
-        <div className="max-w-[1300px] mx-auto">
-          <SectionLabel>/NEWS</SectionLabel>
-          <SectionTitle>Latest insights</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-3 border border-neutral-200 divide-x divide-y divide-neutral-200 mt-16">
-            {news.map((n) => (
-              <div
-                key={n.title}
-                className="p-8 bg-white hover:bg-neutral-50 transition-colors flex flex-col gap-3"
-              >
-                <p className="text-[10px] tracking-[0.14em] uppercase text-neutral-400">{n.tag}</p>
-                <p className="text-[11px] text-neutral-300">{n.date}</p>
-                <p className="font-bold text-[16px] leading-snug">{n.title}</p>
-                <p className="text-neutral-500 text-[13px] leading-relaxed flex-1">{n.excerpt}</p>
-                <a href="#" className="text-[12px] text-blue-500 mt-auto">Read more &rarr;</a>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-10">
-            <a
-              href="#"
-              className="border border-neutral-300 text-neutral-700 text-[13px] font-semibold px-6 py-3 rounded hover:bg-neutral-100 transition-colors inline-block"
-            >
-              Discover more
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section id="faq" className="py-24 px-6 md:px-12">
-        <div className="max-w-[860px] mx-auto">
-          <SectionLabel>/FAQ</SectionLabel>
-          <SectionTitle>Frequently Asked Questions</SectionTitle>
-          <div className="mt-12 border-t border-neutral-200 divide-y divide-neutral-200">
-            {faqs.map((f, i) => (
-              <div key={i}>
-                <button
-                  className="w-full text-left py-6 flex justify-between items-center gap-5 text-[15px] font-semibold"
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                >
-                  {f.q}
-                  <span
-                    className={`text-xl text-neutral-400 transition-transform flex-shrink-0 ${openFaq === i ? "rotate-45" : ""}`}
-                  >
-                    +
-                  </span>
-                </button>
-                {openFaq === i && (
-                  <p className="pb-6 text-neutral-500 text-[14px] leading-relaxed max-w-2xl">{f.a}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CONTACT */}
-      <section id="contact" className="py-28 px-6 text-center bg-neutral-50 border-t border-neutral-200">
-        <div className="max-w-2xl mx-auto">
-          <SectionLabel>/CONTACT</SectionLabel>
-          <SectionTitle>Shockingly good AI starts here.</SectionTitle>
-          <p className="text-neutral-500 text-base mb-10 max-w-md mx-auto">
-            Our experts are always happy to discuss your opportunities. Reach out, and we will connect you with a member of our team.
-          </p>
-          <a
-            href="mailto:info@subduxion.com"
-            className="bg-neutral-900 text-white text-[14px] font-semibold px-8 py-4 rounded hover:bg-neutral-700 transition-colors inline-block"
-          >
-            Start the Conversation
-          </a>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="bg-white border-t border-neutral-200 pt-16 pb-10 px-6 md:px-12">
-        <div className="max-w-[1300px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-            <div className="md:col-span-2">
-              <p className="text-[10px] tracking-[0.12em] uppercase text-neutral-400 mb-4">About Subduxion</p>
-              <p className="text-neutral-500 text-[13px] leading-relaxed mb-5">
-                Subduxion is a European AI consulting company and managed solutions provider based at the High Tech Campus in Eindhoven. We design, build, and operate intelligent systems for organizations across industries and borders.
-              </p>
-              <p className="text-[10px] tracking-[0.1em] uppercase text-neutral-400 mb-1">Email</p>
-              <p className="text-neutral-500 text-[13px] mb-5">info@subduxion.com</p>
-              <p className="text-[10px] tracking-[0.1em] uppercase text-neutral-400 mb-1">Office</p>
-              <p className="text-neutral-500 text-[13px] leading-relaxed mb-5">
-                High Tech Campus 5<br />5656 AE Eindhoven<br />The Netherlands
-              </p>
-              <p className="text-[10px] tracking-[0.1em] uppercase text-neutral-400 mb-1">Connect</p>
-              <a href="#" className="text-neutral-500 text-[13px] hover:text-neutral-900 transition-colors">LinkedIn</a>
-              <div className="mt-6">
-                <p className="text-[10px] tracking-[0.1em] uppercase text-neutral-400 mb-3">Ecosystem Partnerships</p>
-                <div className="flex gap-2">
-                  <span className="px-3 py-1.5 border border-neutral-200 text-[10px] tracking-widest uppercase text-neutral-400">AI Innovation Center</span>
-                  <span className="px-3 py-1.5 border border-neutral-200 text-[10px] tracking-widest uppercase text-neutral-400">AIC4NL</span>
+              {/* Join us card */}
+              <div className="mt-auto pt-8">
+                <div className="bg-[#f9f9f9] rounded-tl-2xl rounded-bl-2xl rounded-br-2xl p-8" style={{ clipPath: 'polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 0 100%)' }}>
+                  <SplitText className="text-[26px] font-[700] leading-[1.1] tracking-[-0.04em] mb-5 text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>{"Not sure where to start?"}</SplitText>
+                  <div className="flex items-center justify-between gap-8">
+                    <SplitText className="text-neutral-900 text-[14px] font-[500] leading-relaxed" stagger={0.03}>
+                      {"Book a free 30-minute discovery call to explore how we can help."}
+                    </SplitText>
+                    <button onClick={() => setShowCalendly(true)} className="group flex items-center flex-shrink-0 rounded-sm overflow-hidden border border-neutral-300 hover:border-neutral-500 transition-colors duration-200">
+                      <span className="px-5 py-3 text-[18px] font-[500] text-neutral-800 whitespace-nowrap" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Book a Call</span>
+                      <span className="m-2 w-8 h-8 flex-shrink-0 rounded-sm border border-neutral-200 text-neutral-600 relative overflow-hidden">
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto">
+                          <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Right – image */}
+            <div className="rounded-2xl overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/ivana.jpeg" alt="Ivana Fisic" className="w-full h-full object-cover" />
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+
+
+      {/* FOOTER */}
+      <footer
+        ref={footerRef}
+        className="relative px-6 md:px-12 bg-[#0f0f0f]"
+        style={{
+          fontFamily: "'Satoshi', sans-serif",
+          clipPath: "polygon(0 0, calc(100% - 80px) 0, 100% 80px, 100% 100%, 0 100%)",
+        }}
+      >
+        {/* Background image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <motion.img
+          src="/footer-g.jpg"
+          alt=""
+          style={{
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            width: "100%",
+            height: "354px",
+            objectFit: "cover",
+            zIndex: 0,
+            maskImage: "linear-gradient(to bottom, transparent 0%, black 32.1368%, black 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 32.1368%, black 100%)",
+            opacity: footerImgOpacity,
+          }}
+        />
+        <div className="relative z-10 max-w-[1240px] mx-auto">
+
+          {/* CTA row */}
+          <div className="py-20 flex items-center justify-between gap-12">
             <div>
-              <p className="text-[10px] tracking-[0.12em] uppercase text-neutral-400 mb-5">Navigation</p>
-              <ul className="space-y-3 list-none">
-                {["Home", "Services", "Solutions", "Case Studies"].map((l) => (
-                  <li key={l}>
-                    <a href="#" className="text-[14px] text-neutral-500 hover:text-neutral-900 transition-colors">{l}</a>
+              <SplitText className="text-[32px] font-[700] leading-[1.1] tracking-[-0.04em] text-white mb-4" style={{ fontFamily: "'Satoshi', sans-serif" }} stagger={0.07}>
+                {"Clarity starts with a conversation."}
+              </SplitText>
+              <SplitText className="text-white font-normal text-[15px] leading-relaxed max-w-[480px]" stagger={0.03}>
+                {"Book a free 30-minute discovery call and let's talk about where your team is stuck."}
+              </SplitText>
+            </div>
+            <button onClick={() => setShowCalendly(true)} className="group flex items-center flex-shrink-0 rounded-sm overflow-hidden bg-white hover:bg-[#069494] transition-colors duration-200">
+              <span className="flex-1 px-6 py-4 text-[18px] font-[500] text-neutral-900 group-hover:text-white transition-colors duration-200 whitespace-nowrap" style={{ fontFamily: "var(--font-satoshi), sans-serif" }}>Start the Conversation</span>
+              <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm bg-neutral-100 group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
+                <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
+                  <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out -translate-x-10 translate-y-10 group-hover:translate-x-0 group-hover:translate-y-0">
+                  <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-neutral-800" />
+
+          {/* Links grid */}
+          <div className="py-16 grid grid-cols-4 gap-12">
+
+            {/* About */}
+            <div>
+              <p className="text-[14px] font-normal tracking-[0.12em] uppercase text-neutral-500 mb-5" style={{ fontFamily: "var(--font-roboto-mono), monospace" }}>About TealWave</p>
+              <p className="text-white font-normal text-[15px] leading-relaxed mb-6">
+                TealWave Solutions helps startups and scaling product teams build operational clarity, improve delivery, and scale sustainably.
+              </p>
+              <p className="text-[14px] font-normal tracking-[0.1em] uppercase text-neutral-500 mb-1" style={{ fontFamily: "var(--font-roboto-mono), monospace" }}>Email</p>
+              <p className="text-white font-normal text-[15px] mb-6">ivanafisic26@gmail.com</p>
+              <p className="text-[14px] font-normal tracking-[0.1em] uppercase text-neutral-500 mb-1" style={{ fontFamily: "var(--font-roboto-mono), monospace" }}>Connect</p>
+              <a href="https://rs.linkedin.com/in/ivanafisic" target="_blank" rel="noopener noreferrer" className="text-white font-normal text-[15px] hover:text-neutral-300 transition-colors">LinkedIn</a>
+            </div>
+
+            {/* Navigation */}
+            <div>
+              <p className="text-[14px] font-normal tracking-[0.12em] uppercase text-neutral-500 mb-6" style={{ fontFamily: "var(--font-roboto-mono), monospace" }}>Navigation</p>
+              <ul className="space-y-4 list-none">
+                {[
+                  { label: "Home", href: "#" },
+                  { label: "Services", href: "#services" },
+                  { label: "Use Cases", href: "/services#solutions" },
+                  { label: "How We Work", href: "#how-we-work" },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <a href={l.href} className="text-[22px] font-[500] text-white hover:text-[#069494] transition-colors" style={{ fontFamily: "'Satoshi', sans-serif" }}>{l.label}</a>
                   </li>
                 ))}
               </ul>
             </div>
+
+            {/* Company */}
             <div>
-              <p className="text-[10px] tracking-[0.12em] uppercase text-neutral-400 mb-5">Company</p>
-              <ul className="space-y-3 list-none mb-10">
-                {["Company", "Careers", "Contact", "News"].map((l) => (
-                  <li key={l}>
-                    <a href="#" className="text-[14px] text-neutral-500 hover:text-neutral-900 transition-colors">{l}</a>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-[10px] tracking-[0.12em] uppercase text-neutral-400 mb-5">Legal</p>
-              <ul className="space-y-3 list-none">
-                {["Terms of Services", "Privacy Policy", "Responsible AI", "Legal"].map((l) => (
-                  <li key={l}>
-                    <a href="#" className="text-[14px] text-neutral-500 hover:text-neutral-900 transition-colors">{l}</a>
+              <p className="text-[14px] font-normal tracking-[0.12em] uppercase text-neutral-500 mb-6" style={{ fontFamily: "var(--font-roboto-mono), monospace" }}>Company</p>
+              <ul className="space-y-4 list-none">
+                {[
+                  { label: "About", href: "/about" },
+                  { label: "Contact", href: "#contact" },
+                ].map((l) => (
+                  <li key={l.label}>
+                    <a href={l.href} className="text-[22px] font-[500] text-white hover:text-[#069494] transition-colors" style={{ fontFamily: "'Satoshi', sans-serif" }}>{l.label}</a>
                   </li>
                 ))}
               </ul>
             </div>
+
+            {/* Legal */}
+            <div>
+              <p className="text-[14px] font-normal tracking-[0.12em] uppercase text-neutral-500 mb-6" style={{ fontFamily: "var(--font-roboto-mono), monospace" }}>Legal</p>
+              <ul className="space-y-4 list-none">
+                {["Terms of Service", "Privacy Policy", "Cookie Policy", "Legal"].map((l) => (
+                  <li key={l}>
+                    <a href="#" className="text-[22px] font-[500] text-white hover:text-[#069494] transition-colors" style={{ fontFamily: "'Satoshi', sans-serif" }}>{l}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
           </div>
-          <div className="pt-8 border-t border-neutral-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-            <p className="text-[11px] tracking-wide text-neutral-400">
-              &copy; 2026 SUBDUXION B.V. IS A DUTCH COMPANY. ALL RIGHTS RESERVED.
-            </p>
-            <p className="text-[11px] text-neutral-300">
-              Subduxion is a company name and is not related to the geological term &apos;subduction&apos;.
+
+          {/* Copyright */}
+          <div className="border-t border-neutral-800 pt-6 pb-32">
+            <p className="text-[13px] tracking-wide text-neutral-500">
+              &copy; 2026 TEALWAVE. COACOA
             </p>
           </div>
+
         </div>
       </footer>
     </>
