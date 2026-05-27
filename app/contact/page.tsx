@@ -136,16 +136,42 @@ export default function ContactPage() {
     phone: "",
     message: "",
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = `mailto:ivanafisic26@gmail.com?subject=Contact from ${form.firstName} ${form.lastName}&body=${encodeURIComponent(
-      `Company: ${form.company}\nEmail: ${form.email}\nPhone: ${form.phone}\n\n${form.message}`
-    )}`;
+    setSubmitting(true);
+    setSubmitError(false);
+    try {
+      const res = await fetch("https://formspree.io/f/mjgzjwzg", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          company: form.company,
+          email: form.email,
+          phone: form.phone,
+          message: form.message,
+        }),
+      });
+      if (res.ok) {
+        setSubmitted(true);
+        setForm({ firstName: "", lastName: "", company: "", email: "", phone: "", message: "" });
+      } else {
+        setSubmitError(true);
+      }
+    } catch {
+      setSubmitError(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const labelClass = "block text-[14px] font-normal tracking-[0.1em] uppercase text-neutral-900 mb-2";
@@ -379,7 +405,14 @@ export default function ContactPage() {
                 Tell us about your team.
               </h2>
 
-              <form onSubmit={handleSubmit} className="bg-white rounded-tl-2xl rounded-bl-2xl rounded-br-2xl p-10 flex flex-col gap-8" style={{ clipPath: "polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%)" }}>
+              {submitted && (
+                <div className="bg-white rounded-tl-2xl rounded-bl-2xl rounded-br-2xl p-10 flex flex-col items-start gap-4" style={{ clipPath: "polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%)" }}>
+                  <p className="text-[28px] font-[700] tracking-[-0.03em] text-neutral-900" style={{ fontFamily: SATOSHI }}>Message sent!</p>
+                  <p className="text-[16px] font-[500] text-neutral-500" style={{ fontFamily: SATOSHI }}>Thanks for reaching out. We&apos;ll get back to you shortly.</p>
+                  <button onClick={() => setSubmitted(false)} className="mt-2 text-[14px] font-normal tracking-[0.08em] uppercase text-neutral-400 hover:text-neutral-700 transition-colors" style={{ fontFamily: ROBOTO_MONO }}>Send another message</button>
+                </div>
+              )}
+              {!submitted && <form onSubmit={handleSubmit} className="bg-white rounded-tl-2xl rounded-bl-2xl rounded-br-2xl p-10 flex flex-col gap-8" style={{ clipPath: "polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%)" }}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   <div>
                     <label className={labelClass} style={{ fontFamily: ROBOTO_MONO }}>First Name</label>
@@ -461,12 +494,16 @@ export default function ContactPage() {
                   </div>
                 </div>
 
+                {submitError && (
+                  <p className="text-[14px] text-red-500 -mt-4" style={{ fontFamily: ROBOTO_MONO }}>Something went wrong. Please try again.</p>
+                )}
                 <button
                   type="submit"
-                  className="group flex items-center w-full rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200"
+                  disabled={submitting}
+                  className="group flex items-center w-full rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200 disabled:opacity-60"
                 >
                   <span className="flex-1 px-6 py-4 text-left text-[18px] font-[500] text-white group-hover:text-neutral-900 transition-colors duration-200" style={{ fontFamily: SATOSHI }}>
-                    Send message
+                    {submitting ? "Sending…" : "Send message"}
                   </span>
                   <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
                     <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
@@ -477,7 +514,8 @@ export default function ContactPage() {
                     </svg>
                   </span>
                 </button>
-              </form>
+              </form>}
+
             </div>
 
           </div>
