@@ -39,6 +39,15 @@ function ScrambleLink({ href, label }: { href: string; label: string }) {
 }
 
 function CalendlyModal({ onClose }: { onClose: () => void }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
@@ -59,7 +68,14 @@ function CalendlyModal({ onClose }: { onClose: () => void }) {
             </button>
             <iframe
               src="https://calendly.com/tealwavesolutions/30min?hide_gdpr_banner=1&primary_color=069494"
-              style={{ display: "block", border: "none", marginLeft: "-48px", marginBottom: "-48px", width: "calc(100% + 96px)", height: "796px" }}
+              style={isMobile ? {
+                display: "block", border: "none",
+                width: "100%", height: "796px", marginBottom: "-48px",
+              } : {
+                display: "block", border: "none",
+                marginLeft: "-48px", marginBottom: "-48px",
+                width: "calc(100% + 96px)", height: "796px",
+              }}
             />
           </div>
         </div>

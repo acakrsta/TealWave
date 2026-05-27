@@ -103,38 +103,15 @@ const capabilities = [
 ];
 
 const capabilityIcons = [
-  /* Strategy – target */
-  <svg key="s" width="88" height="88" viewBox="0 0 88 88" fill="none">
-    <circle cx="44" cy="44" r="30" stroke="#d2d2d2" strokeWidth="3"/>
-    <circle cx="44" cy="44" r="19" stroke="#d2d2d2" strokeWidth="3"/>
-    <circle cx="44" cy="44" r="8" fill="#d2d2d2"/>
-    <line x1="44" y1="14" x2="44" y2="7"  stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
-    <line x1="74" y1="44" x2="81" y2="44" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
-    <line x1="44" y1="74" x2="44" y2="81" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
-    <line x1="14" y1="44" x2="7"  y2="44" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
-  </svg>,
-  /* Data – stacked cylinders */
-  <svg key="d" width="88" height="88" viewBox="0 0 88 88" fill="none">
-    <ellipse cx="44" cy="22" rx="24" ry="9" stroke="#d2d2d2" strokeWidth="3"/>
-    <path d="M20 22 L20 44" stroke="#d2d2d2" strokeWidth="3"/>
-    <path d="M68 22 L68 44" stroke="#d2d2d2" strokeWidth="3"/>
-    <ellipse cx="44" cy="44" rx="24" ry="9" stroke="#d2d2d2" strokeWidth="3"/>
-    <path d="M20 44 L20 66" stroke="#d2d2d2" strokeWidth="3"/>
-    <path d="M68 44 L68 66" stroke="#d2d2d2" strokeWidth="3"/>
-    <ellipse cx="44" cy="66" rx="24" ry="9" stroke="#d2d2d2" strokeWidth="3"/>
-  </svg>,
-  /* Managed – cloud */
-  <svg key="m" width="88" height="88" viewBox="0 0 88 88" fill="none">
-    <path d="M26 60 C14 60 12 48 20 42 C18 30 30 22 42 28 C44 18 54 14 64 20 C72 26 72 38 64 44 C72 46 74 56 68 62 C64 66 56 64 50 64 L28 64 Z" stroke="#d2d2d2" strokeWidth="3" fill="none" strokeLinejoin="round"/>
-  </svg>,
-  /* PoC – clipboard */
-  <svg key="p" width="88" height="88" viewBox="0 0 88 88" fill="none">
-    <rect x="24" y="18" width="40" height="54" rx="4" stroke="#d2d2d2" strokeWidth="3"/>
-    <rect x="32" y="13" width="24" height="12" rx="3" stroke="#d2d2d2" strokeWidth="3"/>
-    <polyline points="32,34 37,39 46,29" stroke="#d2d2d2" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="32" y1="48" x2="56" y2="48" stroke="#d2d2d2" strokeWidth="2.5" strokeLinecap="round"/>
-    <line x1="32" y1="58" x2="48" y2="58" stroke="#d2d2d2" strokeWidth="2.5" strokeLinecap="round"/>
-  </svg>,
+  /* Delivery – magnifying glass */
+  // eslint-disable-next-line @next/next/no-img-element
+  <img key="mg" src="/magnifying-glass.png" alt="" width={180} height={180} className="ml-auto mr-4" />,
+  // eslint-disable-next-line @next/next/no-img-element
+  <img key="target" src="/target.png" alt="" width={180} height={180} className="ml-auto mr-4" />,
+  // eslint-disable-next-line @next/next/no-img-element
+  <img key="chain" src="/chain.png" alt="" width={180} height={180} className="ml-auto mr-4" />,
+  // eslint-disable-next-line @next/next/no-img-element
+  <img key="gear" src="/gear.png" alt="" width={180} height={180} className="ml-auto mr-4" />,
   /* Training – sync arrows */
   <svg key="t" width="88" height="88" viewBox="0 0 88 88" fill="none">
     <path d="M60 28 A24 24 0 1 1 24 48" stroke="#d2d2d2" strokeWidth="3" strokeLinecap="round"/>
@@ -474,6 +451,13 @@ function ProcessSection() {
 
 
 function CalendlyModal({ onClose }: { onClose: () => void }) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
@@ -508,13 +492,13 @@ function CalendlyModal({ onClose }: { onClose: () => void }) {
             </button>
             <iframe
               src="https://calendly.com/tealwavesolutions/30min?hide_gdpr_banner=1&primary_color=069494"
-              style={{
-                display: "block",
-                border: "none",
-                marginLeft: "-48px",
-                marginBottom: "-48px",
-                width: "calc(100% + 96px)",
-                height: "796px",
+              style={isMobile ? {
+                display: "block", border: "none",
+                width: "100%", height: "796px", marginBottom: "-48px",
+              } : {
+                display: "block", border: "none",
+                marginLeft: "-48px", marginBottom: "-48px",
+                width: "calc(100% + 96px)", height: "796px",
               }}
             />
           </div>
@@ -787,9 +771,15 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
             {capabilities.slice(0, 2).map((c, i) => (
               <div key={c.title} className="bg-[#f9f9f9] rounded-2xl p-8 flex flex-col min-h-[380px]">
-                <div className="flex-1 flex items-center justify-center py-4">
+                <motion.div
+                  className="flex-1 flex items-center justify-center py-4"
+                  initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-8%" }}
+                  transition={{ duration: 0.55, ease: [0.25, 0.1, 0.25, 1], delay: i * 0.08 }}
+                >
                   {capabilityIcons[i]}
-                </div>
+                </motion.div>
                 <SplitText className="text-[26px] font-[700] leading-[1.1] tracking-[-0.04em] mb-3 text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>{c.title}</SplitText>
                 <SplitText className="text-neutral-900 text-[14px] font-[500] leading-relaxed" stagger={0.03}>{c.text}</SplitText>
               </div>
@@ -800,9 +790,15 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {capabilities.slice(2).map((c, i) => (
               <div key={c.title} className="bg-[#f9f9f9] rounded-2xl p-8 flex flex-col min-h-[300px]">
-                <div className="flex-1 flex items-center justify-center py-4">
+                <motion.div
+                  className="flex-1 flex items-center justify-center py-4"
+                  initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-8%" }}
+                  transition={{ duration: 0.55, ease: [0.25, 0.1, 0.25, 1], delay: i * 0.08 }}
+                >
                   {capabilityIcons[i + 2]}
-                </div>
+                </motion.div>
                 <SplitText className="text-[26px] font-[700] leading-[1.1] tracking-[-0.04em] mb-3 text-neutral-900" style={{ fontFamily: "'Satoshi', sans-serif" }}>{c.title}</SplitText>
                 <SplitText className="text-neutral-900 text-[14px] font-[500] leading-relaxed" stagger={0.03}>{c.text}</SplitText>
               </div>

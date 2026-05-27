@@ -39,6 +39,13 @@ function ScrambleLink({ href, label }: { href: string; label: string }) {
 }
 
 function CalendlyModal({ onClose }: { onClose: () => void }) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
@@ -59,7 +66,14 @@ function CalendlyModal({ onClose }: { onClose: () => void }) {
             </button>
             <iframe
               src="https://calendly.com/tealwavesolutions/30min?hide_gdpr_banner=1&primary_color=069494"
-              style={{ display: "block", border: "none", marginLeft: "-48px", marginBottom: "-48px", width: "calc(100% + 96px)", height: "796px" }}
+              style={isMobile ? {
+                display: "block", border: "none",
+                width: "100%", height: "796px", marginBottom: "-48px",
+              } : {
+                display: "block", border: "none",
+                marginLeft: "-48px", marginBottom: "-48px",
+                width: "calc(100% + 96px)", height: "796px",
+              }}
             />
           </div>
         </div>
@@ -685,7 +699,7 @@ export default function ServicesPage() {
               </SplitText>
 
               <TransitionLink href="/about" className="group flex items-center w-2/3 md:w-1/2 rounded-sm overflow-hidden bg-neutral-900 hover:bg-[#069494] transition-colors duration-200">
-                <span className="px-6 py-4 text-[18px] font-[500] text-white group-hover:text-neutral-900 transition-colors duration-200" style={{ fontFamily: SATOSHI }}>About Us</span>
+                <span className="flex-1 px-6 py-4 text-[18px] font-[500] text-white group-hover:text-neutral-900 transition-colors duration-200" style={{ fontFamily: SATOSHI }}>About Us</span>
                 <span className="m-2 w-10 h-10 flex-shrink-0 rounded-sm bg-[#069494] group-hover:bg-neutral-900 text-neutral-900 group-hover:text-white transition-colors duration-200 relative overflow-hidden">
                   <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="absolute inset-0 m-auto transition-transform duration-300 ease-out group-hover:translate-x-10 group-hover:-translate-y-10">
                     <path d="M1.5 8.5L8.5 1.5M8.5 1.5H3.5M8.5 1.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
