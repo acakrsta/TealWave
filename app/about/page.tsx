@@ -419,7 +419,7 @@ export default function AboutPage() {
                   <img
                     src="/IvanaFisic.jpeg"
                     alt="Ivana Fisic"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                   />
                 </TileReveal>
               </div>
