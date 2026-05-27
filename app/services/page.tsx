@@ -739,7 +739,7 @@ export default function ServicesPage() {
             {/* Right – image */}
             <div className="rounded-2xl overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/ivana.jpeg" alt="Ivana Fisic" className="w-full h-full object-cover" />
+              <img src="/IvanaFisic.jpeg" alt="Ivana Fisic" className="w-full h-full object-cover" />
             </div>
 
           </div>

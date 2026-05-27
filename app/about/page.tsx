@@ -417,7 +417,7 @@ export default function AboutPage() {
                 <TileReveal>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/ivana.jpeg"
+                    src="/IvanaFisic.jpeg"
                     alt="Ivana Fisic"
                     className="w-full h-full object-cover"
                   />
